@@ -1,0 +1,16 @@
+.musique {
+  background-color: #555;
+  display: block;
+  overflow-x: auto;
+  overflow-y: auto;
+}
+.musique .musique-btn {
+  color: #555;
+  shadow-box: none;
+  border: none;
+  background-color: #ccc;
+}
+.musique .musique-btn:hover {
+  color: #777;
+  background-color: #fff;
+}

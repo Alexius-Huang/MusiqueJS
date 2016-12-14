@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Document</title>
+  <link rel="stylesheet" href="./musique.css">
+</head>
+<body>
+  <div id="audio-player"></div>
+  <script src="./musique.js"></script>
+  <script>
+    var test = new Musique({
+      render: 'audio-player',
+      sourceURL: 'https://sb.silvester.space/assets/uploads/audios/cards/158_Ti81HgLjbe.mp3',
+      type: 'player',
+      // padding: 0,
+      // btnRadius: 20,
+      // btnSpacing: 10,
+      // width: 500,
+      // btnAlign: 'right'
+      // bgc: '#000000',
+      // showControlButtons: false,
+      // play: function(event) {
+      //   event.preventDefault();
+      //   console.log('Play');
+      // },
+    });
+  </script>
+</body>
+</html>
