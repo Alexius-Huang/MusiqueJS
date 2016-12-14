@@ -1,3 +1,11 @@
+/*
+ *
+ * Copyright (c) 2016, Maxwell Alexius All rights reserved.
+ * Version: 1.0.0 beta
+ * Created at: Wed Dec 14 2016 23:38:04 GMT+0800
+ *
+ */
+
 function Musique(params) {
   /* Required Field */
   var _render      = params.render;
@@ -10,21 +18,96 @@ function Musique(params) {
    *   upload   : Having upload field and it can preview uploaded audio file
    */
   
-  /* Audo Generated ID */
-  function randomString(length, chars) {
-    var result = '';
-    if (!chars) { chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'; }
-    for (var i = length; i > 0; --i) result += chars[Math.floor(Math.random() * chars.length)];
-    return result;
-  }
+  /* * * * * * * * * * * * * * * * * * * * Helper Functions Starts * * * * * * * * * * * * * * * * * * * * * */
 
-  var _isFunction = function(input) { return typeof input === "function"; }
+    /* General Functions */
+    function randomString(length, chars) {
+      var result = '';
+      if (!chars) { chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'; }
+      for (var i = length; i > 0; --i) result += chars[Math.floor(Math.random() * chars.length)];
+      return result;
+    }
+
+    var _isFunction = function(input) { return typeof input === "function"; }
+
+    /* Developer Input Validations */
+    var _validate = function(v_case) {
+      switch (v_case) {
+        case 'showCurrentTime and showRemainTime should not be true at the same time':
+          if (_t_showCurrentTime && _t_showRemainTime) {
+            console.error('[Musique Conflict] You can not specify showCurrentTime and showRemainTime in timer at the same time!');
+            console.warn('[Musique Correction] showCurrentTime will be set to true while showRemainTime is set to false.');
+            _t_showRemainTime = false;
+          } break;
+        case 'false in showTimer while "timer" feature as "plain"':
+          if (!_timer.showTimer) {
+            console.error('[Musique Conflict] You can not specify "false" in showTimer while you set "timer" feature as "plain"!');
+            console.warn('[Musique Correction] showTimer is forced to set to true.');
+          } break;
+        case 'no skippable in "timer" feature as "plain"':
+          if (_timer.skippable !== undefined) {
+            console.warn('[Musique Hint] No skippable feature in "timer" feature as "plain".');
+            console.warn('[Musique Correction] skippable in "timer" feature has been ignored.');
+          } break;
+
+      }
+    }
+
+  /* * * * * * * * * * * * * * * * * * * * Helper Functions  Ends  * * * * * * * * * * * * * * * * * * * * * */
   
   if (_type != 'default') {
     /* Features */
-    var _waveform    = params.waveform    !== undefined ? params.waveform    : false;
-    var _timeline    = params.timeline    !== undefined ? params.timeline    : false;
-    var _imageURL    = params.imageURL    !== undefined ? params.imageURL    : null;
+    var _waveform = params.waveform !== undefined && params.waveform instanceof Object ? params.waveform : false;
+    if (_waveform) {
+      var _wf_enabled       = true;
+      var _wf_type          = _waveform.type          !== undefined ? _waveform.type          : '';
+      var _wf_audioRate     = _waveform.audioRate     !== undefined ? _waveform.audioRate     : 1;
+      var _wf_waveColor     = _waveform.waveColor     !== undefined ? _waveform.waveColor     : '#999';
+      var _wf_progressColor = _waveform.progressColor !== undefined ? _waveform.progressColor : '#555';
+      var _wf_cursorWidth   = _waveform.cursorWidth   !== undefined ? _waveform.cursorWidth   : 1;
+      var _wf_cursorColor   = _waveform.cursorColor   !== undefined ? _waveform.cursorColor   : '#333';
+
+      var _wf_zoomSlide     = undefined;
+      var _wf_waveHeight    = undefined;
+
+      if (_wf_type == 'bar') {
+        var _wf_barWidth = _waveform.barWidth >= 1 ? _waveform.barWidth : 3;
+      }
+    } else var _wf_enabled = false;
+
+    var _timer = params.timer !== undefined && (params.timer instanceof Object || params.timer instanceof Boolean) ? params.timer : false;
+    if (_timer) {
+      var _t_enabled = true;
+      var _t_type    = _timer.type !== undefined && _timer.type instanceof String ? _timer.type : 'plain'; 
+      /* type: 'plain' | 'progressBar' */
+      switch (_t_type) {
+        case 'plain':
+          var _t_showTimer        = true;
+          var _t_showProgressBar  = false;
+          var _t_skippable        = false;
+          var _t_showDurationTime = _timer.showDurationTime !== undefined && _timer.showDurationTime instanceof Boolean ? _timer.showDurationTime : true;
+          var _t_showCurrentTime  = _timer.showCurrentTime  !== undefined && _timer.showCurrentTime  instanceof Boolean ? _timer.showCurrentTime : true;
+          var _t_showRemainTime   = _timer.showRemainTime   !== undefined && _timer.showRemainTime   instanceof Boolean ? _timer.showRemainTime : false;
+          
+          /* Error input corrections */
+          _validate('showCurrentTime and showRemainTime should not be true at the same time');
+          _validate('false in showTimer while "timer" feature as "plain"');
+          _validate('no skippable in "timer" feature as "plain"');
+          break;
+        case 'progressBar':
+          var _t_showTimer       = _timer.showTimer !== undefined && _timer.showTimer instanceof Boolean ? _timer.showTimer : true;
+          var _t_showProgressBar = true;
+          var _t_skippable       = _timer.skippable !== undefined && _timer.showTimer instanceof Boolean ? _timer.skippable : true;
+          break;
+        default:
+      }
+    } else var _t_enabled = false;
+
+    var _image = params.imageURL !== undefined && params.image instanceof Object ? params.imageURL : null;
+    if (_image) {
+      var _i_enabled = true;
+      var _i_url     = _image.url !== undefined && _image.url instanceof String ? _image.url : null;
+    } else var _i_enabled = false;
 
     /* Interact with CSS */
     var _customClass = params.customClass !== undefined ? params.customClass : '';
@@ -46,33 +129,6 @@ function Musique(params) {
     var _forward     = params.forward     !== undefined && _isFunction(params.forward)     ? params.forward     : null ;
     var _backward    = params.backward    !== undefined && _isFunction(params.backward)    ? params.backward    : null ;
     var _volumeSlide = params.volumeSlide !== undefined && _isFunction(params.volumeSlide) ? params.volumeSlide : null ;
-
-    /* Waveform Attribute - Effective after enable waveform as 'true' */
-    if (_waveform) {
-      var _waveformType  = waveform.type          !== undefined ? waveform.type          : '';
-      var _audioRate     = waveform.audioRate     !== undefined ? waveform.audioRate     : 1;
-      var _waveColor     = waveform.waveColor     !== undefined ? waveform.waveColor     : '#999';
-      var _progressColor = waveform.progressColor !== undefined ? waveform.progressColor : '#555';
-      var _cursorWidth   = waveform.cursorWidth   !== undefined ? waveform.cursorWidth   : 1;
-      var _cursorColor   = waveform.cursorColor   !== undefined ? waveform.cursorColor   : '#333';
-
-      var _zoomSlide     = undefined;
-      var _waveHeight    = undefined;
-
-      if (type == 'bar') {
-        var barWidth = waveform.barWidth >= 1 ? waveform.barWidth : 3;
-      }
-    }
-  }
-  
-  /* Timeline Attribute - Effective after enable timeline as 'true' */
-  if (_timeline) {
-  
-  }
-  
-  /* Image Attribute - Effective when imageURL is specified */
-  if (_imageURL) {
-  
   }
 
   /* API Default Params */
@@ -84,13 +140,19 @@ function Musique(params) {
   $buttonHeight = 30;
 
   /* Define Basic Functions */
-  var _createNode = function(element, obj) {
-    var node = document.createElement(element);
-    if (obj.class) node.className = obj.class;
-    if (obj.id)    node.id        = obj.id;
-    if (obj.text)  node.innerHTML = obj.text;
-    return node;
-  }
+  // var _createNode = function(element, obj) {
+  //   var node = document.createElement(element);
+  //   if (obj.class) node.className = obj.class;
+  //   if (obj.id)    node.id        = obj.id;
+  //   if (obj.text)  node.innerHTML = obj.text;
+  //   return node;
+  // }
+
+  var _timerEnabled = function() { return _t_enabled; }
+
+  var _waveformEnabled = function() { return _wf_enabled; }
+
+  var _imageEnabled = function() { return _i_enabled; }
   
   var _appendNode = function(parentElement, element, obj) {
     var node = document.createElement(element);
@@ -199,8 +261,6 @@ function Musique(params) {
       var currentTime = _getCurrentTime(audioTagID);
       var duration    = _getDurationTime(audioTagID);
       var nextTime    = currentTime + skipLength;
-      console.log('current time: ' + String(currentTime));
-      console.log('next time: ' + String(nextTime));
       if (nextTime < duration) {
         _setCurrentTime(nextTime, audioTagID);
       } else if (nextTime >= duration) {
@@ -220,8 +280,6 @@ function Musique(params) {
       var currentTime = _getCurrentTime(audioTagID);
       var duration    = _getDurationTime(audioTagID);
       var nextTime    = currentTime - skipLength;
-      console.log('current time: ' + String(currentTime));
-      console.log('next time: ' + String(nextTime));
       if (nextTime > 0) {
         _setCurrentTime(nextTime, audioTagID);
       } else if (nextTime <= 0) {
