@@ -143,7 +143,7 @@ function Musique(params) {
     } else var _i_enabled = false;
 
     /* Interact with CSS */
-    var _style = _inputSpecified(params.style) && style instanceof Object ? params.style : undefined;
+    var _style = _inputSpecified(params.style) && params.style instanceof Object ? params.style : undefined;
     
     /* Main Part */  
     var _width        = _style && _inputSpecified(_style.width)        ? _style.width        : 0;
@@ -695,11 +695,11 @@ function Musique(params) {
               'margin-left':      String(_timerSpacing) + 'px',
               'margin-right':     String(_timerSpacing) + 'px',
               'padding':          String(_timerPadding) + 'px',
-              'background-color': String(_timerBgc),
               'border-radius':    String(_timerRadius)  + 'px',
-              'border':           String(_timerBorder),
+              'background-color': _timerBgc,
+              'border':           _timerBorder,
+              'color':            _timerColor,
               'font-size':        'small',
-              'color':            '#aaa',
             }
           }
           if (!_inputSpecified(params.width)) { _width += $timerWidth; }

@@ -9,6 +9,7 @@
   <div id="audio-player"></div>
   <script src="./musique.js"></script>
   <script>
+
     var example = new Musique({
       render: 'audio-player',
       sourceURL: 'https://sb.silvester.space/assets/uploads/audios/cards/158_Ti81HgLjbe.mp3',
@@ -25,6 +26,10 @@
       //   event.preventDefault();
       //   console.log('Play');
       // },
+      style: {
+        timerColor: '#ff0000',
+        timerBgc: '#ffffff'
+      },
       timer: {},
       play:  function(event) {
         console.log('"Play" event fired!'); 
@@ -53,6 +58,7 @@
         console.log('"Playing" event fired!');
       }
     });
+
   </script>
 </body>
 </html>
