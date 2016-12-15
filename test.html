@@ -9,10 +9,11 @@
   <div id="audio-player"></div>
   <script src="./musique.js"></script>
   <script>
-    var test = new Musique({
+    var example = new Musique({
       render: 'audio-player',
       sourceURL: 'https://sb.silvester.space/assets/uploads/audios/cards/158_Ti81HgLjbe.mp3',
       type: 'player',
+      //autoPlay: true,
       // padding: 0,
       // btnRadius: 20,
       // btnSpacing: 10,
@@ -25,6 +26,32 @@
       //   console.log('Play');
       // },
       timer: {},
+      play:  function(event) {
+        console.log('"Play" event fired!'); 
+        // example.playAudio();
+      },
+      pause:  function(event) {
+        console.log('"Pause" event fired!'); 
+        // example.pauseAudio();
+      },
+      stop:  function(event) {
+        console.log('"Stop" event fired!');
+        // example.stopAudio(); 
+      },
+      forward:  function(event) {
+        console.log('"Forward" event fired!');
+        // example.forwardAudio(); 
+      },
+      backward:  function(event) {
+        console.log('"Backward" event fired!');
+        // example.backwardAudio();
+      },
+      ready: function(event) {
+        console.log('"Ready" event fired!');
+      },
+      playing: function(event) {
+        console.log('"Playing" event fired!');
+      }
     });
   </script>
 </body>

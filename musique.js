@@ -7,17 +7,7 @@
  */
 
 function Musique(params) {
-  /* Required Field */
-  var _render      = params.render;
-  var _sourceURL   = params.sourceURL   !== undefined ? params.sourceURL   : null;
-  var _type        = params.type        !== undefined ? params.type        : 'default';
-  /* Types
-   *   default  : Plain HTML5 Audio API
-   *   player   : Audio API with basic control buttons bind with methods, 'play', 'pause', 'stop', 'forward', 'backward'
-   *   playlist : Playlist with multiple song
-   *   upload   : Having upload field and it can preview uploaded audio file
-   */
-  
+
   /* * * * * * * * * * * * * * * * * * * * Helper Functions Starts * * * * * * * * * * * * * * * * * * * * * */
 
     /* General Functions */
@@ -27,45 +17,75 @@ function Musique(params) {
       for (var i = length; i > 0; --i) result += chars[Math.floor(Math.random() * chars.length)];
       return result;
     }
+    
+    var _inputSpecified = function(input) { return input !== undefined; }
 
     var _isFunction = function(input) { return typeof input === "function"; }
 
-    /* Developer Input Validations */
-    var _validate = function(v_case) {
-      switch (v_case) {
-        case 'showCurrentTime and showRemainTime should not be true at the same time':
-          if (_t_showCurrentTime && _t_showRemainTime) {
-            console.error('[Musique Conflict] You can not specify showCurrentTime and showRemainTime in timer at the same time!');
-            console.warn('[Musique Correction] showCurrentTime will be set to true while showRemainTime is set to false.');
-            _t_showRemainTime = false;
-          } break;
-        case 'false in showTimer while "timer" feature as "plain"':
-          if (!_timer.showTimer) {
-            console.error('[Musique Conflict] You can not specify "false" in showTimer while you set "timer" feature as "plain"!');
-            console.warn('[Musique Correction] showTimer is forced to set to true.');
-          } break;
-        case 'no skippable in "timer" feature as "plain"':
-          if (_timer.skippable !== undefined) {
-            console.warn('[Musique Hint] No skippable feature in "timer" feature as "plain".');
-            console.warn('[Musique Correction] skippable in "timer" feature has been ignored.');
-          } break;
+    var _integer = function(input) { return Math.floor(input); }
 
-      }
-    }
+    var _getElement = function(elementID) { return document.getElementById(elementID); }
+
+    /* Developer Input Validations */
+    // var _validate = function(v_case) {
+    //   switch (v_case) {
+    //     case 'showCurrentTime and showRemainTime should not be true at the same time':
+    //       if (_t_showCurrentTime && _t_showRemainTime) {
+    //         console.error('[Musique Conflict] You can not specify showCurrentTime and showRemainTime in timer at the same time!');
+    //         console.warn('[Musique Correction] showCurrentTime will be set to true while showRemainTime is set to false.');
+    //         _t_showRemainTime = false;
+    //       } break;
+    //     case 'false in showTimer while "timer" feature as "plain"':
+    //       if (!_timer.showTimer) {
+    //         console.error('[Musique Conflict] You can not specify "false" in showTimer while you set "timer" feature as "plain"!');
+    //         console.warn('[Musique Correction] showTimer is forced to set to true.');
+    //       } break;
+    //     case 'no skippable in "timer" feature as "plain"':
+    //       if (_timer.skippable !== undefined) {
+    //         console.warn('[Musique Hint] No skippable feature in "timer" feature as "plain".');
+    //         console.warn('[Musique Correction] skippable in "timer" feature has been ignored.');
+    //       } break;
+    //     case 'false in showTimer while showDurationTime, showCurrentTime or showRemainTime is/are true':
+    //       if (!_timer.showTimer && (_timer.showDurationTime || _timer.showCurrentTime || _timer._t_showRemainTime)) {
+    //         console.error('[Musique Conflict] You can not specify showDurationTime, showCurrentTime or showRemainTime as true while showTimer is false!');
+    //         console.warn('[Musique Correction] showDurationTime, showCurrentTime and showRemainTime are forced to set false.');
+    //         _t_showDurationTime = false;
+    //         _t_showCurrentTime  = false;
+    //         _t_showRemainTime   = false;
+    //       }
+    //   }
+    // }
 
   /* * * * * * * * * * * * * * * * * * * * Helper Functions  Ends  * * * * * * * * * * * * * * * * * * * * * */
   
+  /* * * * * * * * * * * * * * * * * * * * * Inputs Fields Start * * * * * * * * * * * * * * * * * * * * * * */
+  
+  /* Required Field */
+  var _render    = params.render;
+  var _sourceURL = _inputSpecified(params.sourceURL) ? params.sourceURL : null;
+  var _type      = _inputSpecified(params.type)      ? params.type      : 'default';
+  /* Types
+   *   default  : Plain HTML5 Audio API
+   *   player   : Audio API with basic control buttons bind with methods, 'play', 'pause', 'stop', 'forward', 'backward'
+   *   playlist : Playlist with multiple song
+   *   upload   : Having upload field and it can preview uploaded audio file
+   */
+
+  /* Optional Field */
+  var _customClass = _inputSpecified(params.customClass) ? params.customClass : '';
+  var _autoPlay    = _inputSpecified(params.autoPlay)    ? params.autoPlay    : false;
+
   if (_type != 'default') {
     /* Features */
-    var _waveform = params.waveform !== undefined && params.waveform instanceof Object ? params.waveform : false;
+    var _waveform = _inputSpecified(params.waveform) && params.waveform instanceof Object ? params.waveform : false;
     if (_waveform) {
       var _wf_enabled       = true;
-      var _wf_type          = _waveform.type          !== undefined ? _waveform.type          : '';
-      var _wf_audioRate     = _waveform.audioRate     !== undefined ? _waveform.audioRate     : 1;
-      var _wf_waveColor     = _waveform.waveColor     !== undefined ? _waveform.waveColor     : '#999';
-      var _wf_progressColor = _waveform.progressColor !== undefined ? _waveform.progressColor : '#555';
-      var _wf_cursorWidth   = _waveform.cursorWidth   !== undefined ? _waveform.cursorWidth   : 1;
-      var _wf_cursorColor   = _waveform.cursorColor   !== undefined ? _waveform.cursorColor   : '#333';
+      var _wf_type          = _inputSpecified(_waveform.type)          ? _waveform.type          : '';
+      var _wf_audioRate     = _inputSpecified(_waveform.audioRate)     ? _waveform.audioRate     : 1;
+      var _wf_waveColor     = _inputSpecified(_waveform.waveColor)     ? _waveform.waveColor     : '#999';
+      var _wf_progressColor = _inputSpecified(_waveform.progressColor) ? _waveform.progressColor : '#555';
+      var _wf_cursorWidth   = _inputSpecified(_waveform.cursorWidth)   ? _waveform.cursorWidth   : 1;
+      var _wf_cursorColor   = _inputSpecified(_waveform.cursorColor)   ? _waveform.cursorColor   : '#333';
 
       var _wf_zoomSlide     = undefined;
       var _wf_waveHeight    = undefined;
@@ -75,71 +95,116 @@ function Musique(params) {
       }
     } else var _wf_enabled = false;
 
-    var _timer = params.timer !== undefined && (params.timer instanceof Object || params.timer instanceof Boolean) ? params.timer : false;
+    var _timer = params.timer !== undefined && (params.timer instanceof Object || typeof params.timer === "boolean") ? params.timer : false;
     if (_timer) {
-      var _t_enabled = true;
-      var _t_type    = _timer.type !== undefined && _timer.type instanceof String ? _timer.type : 'plain'; 
+      var _t_enabled            = true;
+      var _t_withProgressBar    = _inputSpecified(_timer.withProgressBar)    && typeof _timer.withProgressBar === "boolean" ? _timer.withProgressBar : true ;
+      var _t_progressBarType    = _inputSpecified(_timer.progressBarType)    ? _timer.progressBarType : 'plain';
+      var _t_timerOnProgressBar = _inputSpecified(_timer.timerOnProgressBar) ? _timer.timerOnProgressBar : false;
+      // var _t_type    = _timer.type !== undefined && _timer.type instanceof String ? _timer.type : 'plain'; 
       /* type: 'plain' | 'progressBar' */
-      switch (_t_type) {
-        case 'plain':
-          var _t_showTimer        = true;
-          var _t_showProgressBar  = false;
-          var _t_skippable        = false;
-          var _t_showDurationTime = _timer.showDurationTime !== undefined && _timer.showDurationTime instanceof Boolean ? _timer.showDurationTime : true;
-          var _t_showCurrentTime  = _timer.showCurrentTime  !== undefined && _timer.showCurrentTime  instanceof Boolean ? _timer.showCurrentTime : true;
-          var _t_showRemainTime   = _timer.showRemainTime   !== undefined && _timer.showRemainTime   instanceof Boolean ? _timer.showRemainTime : false;
+      
+      // switch (_t_type) {
+      //   case 'plain':
+      //     var _t_showTimer       = true;
+      //     var _t_skippable       = false;
+      //     // var _t_showDurationTime = _timer.showDurationTime !== undefined && _timer.showDurationTime instanceof Boolean ? _timer.showDurationTime : true;
+      //     // var _t_showCurrentTime  = _timer.showCurrentTime  !== undefined && _timer.showCurrentTime  instanceof Boolean ? _timer.showCurrentTime  : true;
+      //     // var _t_showRemainTime   = _timer.showRemainTime   !== undefined && _timer.showRemainTime   instanceof Boolean ? _timer.showRemainTime   : false;
           
-          /* Error input corrections */
-          _validate('showCurrentTime and showRemainTime should not be true at the same time');
-          _validate('false in showTimer while "timer" feature as "plain"');
-          _validate('no skippable in "timer" feature as "plain"');
-          break;
-        case 'progressBar':
-          var _t_showTimer       = _timer.showTimer !== undefined && _timer.showTimer instanceof Boolean ? _timer.showTimer : true;
-          var _t_showProgressBar = true;
-          var _t_skippable       = _timer.skippable !== undefined && _timer.showTimer instanceof Boolean ? _timer.skippable : true;
-          break;
-        default:
-      }
+      //     /* Error input corrections */
+      //     // _validate('showCurrentTime and showRemainTime should not be true at the same time');
+      //     // _validate('false in showTimer while "timer" feature as "plain"');
+      //     // _validate('no skippable in "timer" feature as "plain"');
+      //     break;
+      //   case 'progressBar':
+      //     var _t_showTimer       = _timer.showTimer !== undefined && _timer.showTimer instanceof Boolean ? _timer.showTimer : true;
+      //     var _t_showProgressBar = true;
+      //     var _t_skippable       = _timer.skippable !== undefined && _timer.showTimer instanceof Boolean ? _timer.skippable : true;
+      //     // var _t_showDurationTime = _timer.showDurationTime !== undefined && _timer.showDurationTime instanceof Boolean && _t_showTimer? _timer.showDurationTime : true;
+      //     // var _t_showCurrentTime  = _timer.showCurrentTime  !== undefined && _timer.showCurrentTime  instanceof Boolean && _t_showTimer? _timer.showCurrentTime  : true;
+      //     // var _t_showRemainTime   = _timer.showRemainTime   !== undefined && _timer.showRemainTime   instanceof Boolean && _t_showTimer? _timer.showRemainTime   : false;
+          
+      //     /* Error input corrections */
+      //     // _validate('false in showTimer while showDurationTime, showCurrentTime or showRemainTime is/are true');
+      //     // if (_t_showTimer) {
+      //     //   _validate('showCurrentTime and showRemainTime should not be true at the same time');
+      //     //   _validate('')
+      //     // }
+      //     break;
+      //   default:
+      // }
     } else var _t_enabled = false;
 
-    var _image = params.imageURL !== undefined && params.image instanceof Object ? params.imageURL : null;
+    var _image = _inputSpecified(params.imageURL) && params.image instanceof Object ? params.imageURL : null;
     if (_image) {
       var _i_enabled = true;
-      var _i_url     = _image.url !== undefined && _image.url instanceof String ? _image.url : null;
+      var _i_url     = _inputSpecified(_image.url) && _image.url instanceof String ? _image.url : null;
     } else var _i_enabled = false;
 
     /* Interact with CSS */
-    var _customClass = params.customClass !== undefined ? params.customClass : '';
-    var _style       = params.style       !== undefined ? params.style       : 'default';
-    var _width       = params.width       !== undefined ? params.width       : 300;
-    var _height      = params.height      !== undefined ? params.height      : 0;
-    var _padding     = params.padding     !== undefined ? params.padding     : 5;
-    var _bgc         = params.bgc         !== undefined ? params.bgc         : '#555';
-    var _btnRadius   = params.btnRadius   !== undefined ? params.btnRadius   : 5;
-    var _btnSpacing  = params.btnSpacing  !== undefined ? params.btnSpacing  : 3;
-    var _btnAlign    = params.btnAlign    !== undefined ? params.btnAlign    : 'center';
-
+    var _style = _inputSpecified(params.style) && style instanceof Object ? params.style : undefined;
+    
+    /* Main Part */  
+    var _width        = _style && _inputSpecified(_style.width)        ? _style.width        : 0;
+    var _height       = _style && _inputSpecified(_style.height)       ? _style.height       : 0;
+    var _padding      = _style && _inputSpecified(_style.padding)      ? _style.padding      : 8;
+    var _bgc          = _style && _inputSpecified(_style.bgc)          ? _style.bgc          : '#555';
+  
+    /* Button Part */
+    var _btnRadius    = _style && _inputSpecified(_style.btnRadius)    ? _style.btnRadius    : 3;
+    var _btnSpacing   = _style && _inputSpecified(_style.btnSpacing)   ? _style.btnSpacing   : 3;
+    var _btnAlign     = _style && _inputSpecified(_style.btnAlign)     ? _style.btnAlign     : 'center';
+  
+    /* Timer Part */
+    var _timerSpacing = _style && _inputSpecified(_style.timerSpacing) ? _style.timerSpacing : 10;
+    var _timerColor   = _style && _inputSpecified(_style.timerColor)   ? _style.timerColor   : '#aaa'
+    var _timerPadding = _style && _inputSpecified(_style.timerPadding) ? _style.timerPadding : 3;
+    var _timerBgc     = _style && _inputSpecified(_style.timerBgc)     ? _style.timerBgc     : '#333';
+    var _timerBorder  = _style && _inputSpecified(_style.timerBorder)  ? _style.timerBorder  : '1px solid #aaa';
+    var _timerRadius  = _style && _inputSpecified(_style.timerRadius)  ? _style.timerRadius  : 3;
+    
     /* Control Attribute */
-    var _showControlButtons = params.showControlButtons !== undefined ? params.showControlButtons : true;
-    var _skipLength         = params.skipLength         !== undefined ? params.skipLength         : 5;
-    var _play        = params.play        !== undefined && _isFunction(params.play)        ? params.play        : null ;
-    var _pause       = params.pause       !== undefined && _isFunction(params.pause)       ? params.pause       : null ;
-    var _stop        = params.stop        !== undefined && _isFunction(params.stop)        ? params.stop        : null ;
-    var _forward     = params.forward     !== undefined && _isFunction(params.forward)     ? params.forward     : null ;
-    var _backward    = params.backward    !== undefined && _isFunction(params.backward)    ? params.backward    : null ;
-    var _volumeSlide = params.volumeSlide !== undefined && _isFunction(params.volumeSlide) ? params.volumeSlide : null ;
+    var _showControlButtons = _inputSpecified(params.showControlButtons) ? params.showControlButtons : true;
+    var _skipLength         = _inputSpecified(params.skipLength)         ? params.skipLength         : 5;
+    /* Control Events */
+    var _play     = _inputSpecified(params.play)     && _isFunction(params.play)     ? params.play     : null ;
+    var _pause    = _inputSpecified(params.pause)    && _isFunction(params.pause)    ? params.pause    : null ;
+    var _stop     = _inputSpecified(params.stop)     && _isFunction(params.stop)     ? params.stop     : null ;
+    var _forward  = _inputSpecified(params.forward)  && _isFunction(params.forward)  ? params.forward  : null ;
+    var _backward = _inputSpecified(params.backward) && _isFunction(params.backward) ? params.backward : null ;
+    // var _volumeSlide = params.volumeSlide !== undefined && _isFunction(params.volumeSlide) ? params.volumeSlide : null ;
+  
+    /* Lifecycle Events */
+    var _ready    = _inputSpecified(params.ready)    && _isFunction(params.ready)    ? params.ready    : null ;
+    var _playing  = _inputSpecified(params.playing)  && _isFunction(params.playing)  ? params.playing  : null ;
   }
 
-  /* API Default Params */
-  var $musiqueID = randomString(10) + String(Date.now());
-  var $musiqueAudioID   = 'musique-audio-' + $musiqueID;
+  /* * * * * * * * * * * * * * * * * * * * * Inputs Fields End * * * * * * * * * * * * * * * * * * * * * * * */
+
+  /* * * * * * * * * * * * * * * * * * * * * Parameters Start * * * * * * * * * * * * * * * * * * * * * * * * */
+
+  /* Property (Immuteble) Params */
+  var $musiqueID        = randomString(10) + String(Date.now());
+  var $musiqueRootID    = 'musique-'         + $musiqueID;
+  var $musiqueAudioID   = 'musique-audio-'   + $musiqueID;
   var $musiqueControlID = 'musique-control-' + $musiqueID;
+  var $musiqueTimerID   = 'musique-timer-'   + $musiqueID;
+  var $durationTime     = NaN; // Integer type, should be get after "ready" event
 
-  /* CSS Style Default Params */
-  $buttonHeight = 30;
+  /* CSS Style Params */
+  $controlButtonsWidth = 300;
+  $buttonHeight        = 25;
+  $timerWidth          = 100;
 
-  /* Define Basic Functions */
+  /* State (Mutable) Params (Should be get after "ready" event) */
+  var $_currentTime = NaN; // Integer Type
+  var $_remainTime  = NaN; // Integer Type
+  var $_audioPlayingIntervalID = null;
+
+  /* * * * * * * * * * * * * * * * * * * * * Parameters End * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+  /* * * * * * * * * * * * * * * Musique procedural private functions start * * * * * * * * * * * * * * * */
   // var _createNode = function(element, obj) {
   //   var node = document.createElement(element);
   //   if (obj.class) node.className = obj.class;
@@ -147,7 +212,7 @@ function Musique(params) {
   //   if (obj.text)  node.innerHTML = obj.text;
   //   return node;
   // }
-
+  
   var _timerEnabled = function() { return _t_enabled; }
 
   var _waveformEnabled = function() { return _wf_enabled; }
@@ -186,24 +251,24 @@ function Musique(params) {
       case 'div':
         break;
       case 'a':        
-        node.href   = attr && attr.href   !== undefined? attr.href   : '#';
-        node.target = attr && attr.target !== undefined? attr.target : '_self';
+        node.href   = attr && _inputSpecified(attr.href)   ? attr.href   : '#';
+        node.target = attr && _inputSpecified(attr.target) ? attr.target : '_self';
         event && _isFunction(event.click)    ? node.addEventListener('click',     event.click,    false) : undefined;
         event && _isFunction(event.hoverIn)  ? node.addEventListener('mouseover', event.hoverIn,  false) : undefined;
         event && _isFunction(event.hoverOut) ? node.addEventListener('mouseout',  event.hoverOut, false) : undefined;
         break;
       case 'img':
-        node.src = attr && attr.src !== undefined ? attr.src : 'no source specified';
-        node.alt = attr && attr.alt !== undefined ? attr.alt : 'no alt specified';
+        node.src = attr && _inputSpecified(attr.src) ? attr.src : 'no source specified';
+        node.alt = attr && _inputSpecified(attr.alt) ? attr.alt : 'no alt specified';
         break;
       case 'button':
-        node.disable = attr && attr.disable !== undefined ? attr.disable : true;
+        node.disable = attr && _inputSpecified(attr.disable) ? attr.disable : true;
         event && _isFunction(event.click)    ? node.addEventListener('click',     event.click,    false) : undefined;
         event && _isFunction(event.hoverIn)  ? node.addEventListener('mouseover', event.hoverIn,  false) : undefined;
         event && _isFunction(event.hoverOut) ? node.addEventListener('mouseout',  event.hoverOut, false) : undefined;
         break;
       case 'audio':
-        node.controls = attr && attr.controls !== undefined ? attr.controls : false;
+        node.controls = attr && _inputSpecified(attr.controls) ? attr.controls : false;
         node.id       = $musiqueAudioID;
         if (attr && attr.src) {
           var fileExt = attr.src.split('.').pop().toLowerCase();
@@ -215,10 +280,12 @@ function Musique(params) {
           }
           _appendNode(node, 'source', { attr: { src: attr.src, type: mimeType } });
         }
+        event && _isFunction(event.ready)   ? node.addEventListener('canplay', event.ready,   false) : undefined;
+        event && _isFunction(event.playing) ? node.addEventListener('playing', event.playing, false) : undefined;
         break;
       case 'source':
-        node.src  = attr && attr.src  !== undefined ? attr.src  : 'no source specified';
-        node.type = attr && attr.type !== undefined ? attr.type : 'no mime type specified';
+        node.src  = attr && _inputSpecified(attr.src)  ? attr.src  : 'no source specified';
+        node.type = attr && _inputSpecified(attr.type) ? attr.type : 'no mime type specified';
         break;
     }
     parentElement.appendChild(node);
@@ -226,8 +293,9 @@ function Musique(params) {
   
   var _playAudio = function(audioTagID) {
     var ID = audioTagID ? audioTagID : $musiqueAudioID;
-    var audioElement = document.getElementById(ID);
+    var audioElement = _getElement(ID);
     if (audioElement && !_isPlaying(audioTagID)) {
+      /* Default "play" Actions Here */
       audioElement.play();
       return true;
     } else return false;
@@ -235,8 +303,9 @@ function Musique(params) {
   
   var _pauseAudio = function(audioTagID) {
     var ID = audioTagID ? audioTagID : $musiqueAudioID;
-    var audioElement = document.getElementById(ID);
+    var audioElement = _getElement(ID);
     if (audioElement && _isPlaying(audioTagID)) {
+      /* Default "pause" Actions Here */
       audioElement.pause();
       return true;
     } else return false;
@@ -244,8 +313,9 @@ function Musique(params) {
   
   var _stopAudio = function(audioTagID) {
     var ID = audioTagID ? audioTagID : $musiqueAudioID;
-    var audioElement = document.getElementById(ID);
+    var audioElement = _getElement(ID);
     if (audioElement) {
+      /* Default "stop" Actions Here */
       _pauseAudio(audioTagID);
       _setCurrentTime(0, audioTagID);
       return true;
@@ -254,10 +324,11 @@ function Musique(params) {
 
   var _forwardAudio = function(skipLength, audioTagID) {
     var ID = audioTagID ? audioTagID : $musiqueAudioID;
-    var audioElement = document.getElementById(ID);
+    var audioElement = _getElement(ID);
     if (!skipLength) { skipLength = _skipLength; }
 
     if (audioElement) {
+      /* Default "forward" Actions Here */
       var currentTime = _getCurrentTime(audioTagID);
       var duration    = _getDurationTime(audioTagID);
       var nextTime    = currentTime + skipLength;
@@ -273,10 +344,11 @@ function Musique(params) {
 
   var _backwardAudio = function(skipLength, audioTagID) {
     var ID = audioTagID ? audioTagID : $musiqueAudioID;
-    var audioElement = document.getElementById(ID);
+    var audioElement = _getElement(ID);
     if (!skipLength) { skipLength = _skipLength; }
 
     if (audioElement) {
+      /* Default "backward" Actions Here */
       var currentTime = _getCurrentTime(audioTagID);
       var duration    = _getDurationTime(audioTagID);
       var nextTime    = currentTime - skipLength;
@@ -292,7 +364,7 @@ function Musique(params) {
 
   var _isPlaying = function(audioTagID) {
     var ID = audioTagID ? audioTagID : $musiqueAudioID;
-    var audioElement = document.getElementById(ID);
+    var audioElement = _getElement(ID);
     if (audioElement) {
       return !audioElement.paused;
     } else return false;
@@ -300,7 +372,7 @@ function Musique(params) {
 
   var _getDurationTime = function(audioTagID) {
     var ID = audioTagID ? audioTagID : $musiqueAudioID;
-    var audioElement = document.getElementById(ID);
+    var audioElement = _getElement(ID);
     if (audioElement) {
       return audioElement.duration;
     } else return NaN;
@@ -308,15 +380,35 @@ function Musique(params) {
 
   var _getCurrentTime = function(audioTagID) {
     var ID = audioTagID ? audioTagID : $musiqueAudioID;
-    var audioElement = document.getElementById(ID);
+    var audioElement = _getElement(ID);
     if (audioElement) {
       return audioElement.currentTime;
     } else return NaN;
   }
 
+  var _getTimerText = function() {
+    var durationTime = $durationTime;
+    var currentTime  = $_currentTime;
+    var remainTime   = $_remainTime;
+    var durationMin  = String(_integer($durationTime / 60));
+    var currentMin   = String(_integer($_currentTime / 60));
+    var remainMin    = String(_integer($_remainTime  / 60));
+    var currentSec   = String($_currentTime % 60);
+    var durationSec  = String($durationTime % 60);
+    var remainSec    = String($_remainTime  % 60);
+
+    durationMin = durationMin.length == 2 ? durationMin : ("0" + durationMin) ;
+    durationSec = durationSec.length == 2 ? durationSec : ("0" + durationSec) ;
+    currentMin  = currentMin.length  == 2 ? currentMin  : ("0" + currentMin)  ;
+    currentSec  = currentSec.length  == 2 ? currentSec  : ("0" + currentSec)  ;
+    remainMin   = remainMin.length   == 2 ? remainMin   : ("0" + remainMin)   ;
+    remainSec   = remainSec.length   == 2 ? remainSec   : ("0" + remainSec)   ;
+    return " " + currentMin + " : " + currentSec + " | " + durationMin + " : " + durationSec + " ";
+  }
+
   var _getVolume = function(audioTagID) {
     var ID = audioTagID ? audioTagID : $musiqueAudioID;
-    var audioElement = document.getElementById(ID);
+    var audioElement = _getElement(ID);
     if (audioElement) {
       return audioElement.volume * 100;
     } else return NaN;
@@ -324,7 +416,7 @@ function Musique(params) {
 
   var _setCurrentTime = function(sec, audioTagID) {
     var ID = audioTagID ? audioTagID : $musiqueAudioID;
-    var audioElement = document.getElementById(ID);
+    var audioElement = _getElement(ID);
     if (audioElement) {
       audioElement.currentTime = sec;
       return true;
@@ -333,64 +425,125 @@ function Musique(params) {
 
   var _setVolume = function(percentage, audioTagID) {
     var ID = audioTagID ? audioTagID : $musiqueAudioID;
-    var audioElement = document.getElementById(ID);
+    var audioElement = _getElement(ID);
     if (audioElement) {
       audioElement.volume = percentage / 100;
       return true;
     } else return false;
   }
 
+  var _setTimerText = function() {
+    var timerText    = _getTimerText();
+    var timerElement = _getElement($musiqueTimerID);
+    timerElement.innerHTML = timerText;
+  }
+
+  var _setAudioPlayingInterval = function() {
+    $_audioPlayingIntervalID = setInterval(function() {
+      $_currentTime = _integer(_getCurrentTime());
+      $_remainTime  = $durationTime - $_currentTime;
+      if (_timer) { _setTimerText(); }
+    }, 100);
+  }
+
+  var _unsetAudioPlayingInterval = function() {
+    clearInterval($_audioPlayingIntervalID);
+    $_audioPlayingIntervalID = null;
+  }
+
   var _toggleMute = function(audioTagID) {
     var ID = audioTagID ? audioTagID : $musiqueAudioID;
-    var audioElement = document.getElementById(ID);
+    var audioElement = _getElement(ID);
     if (audioElement) {
       audioElement.muted = !audioElement.muted;
       return true;
     } else return false;
   }
 
-  /* Musique Event Functions used in Event Listening */
+  var _audioReady = function(audioTagID) {
+    var ID = audioTagID ? audioTagID : $musiqueAudioID;
+    var audioElement = _getElement(ID);
+    if (audioElement) {
+      /* Default "ready" Actions Here */
+      return true;
+    } else return false;
+  }
+  
+  var _audioPlaying = function(audioTagID) {
+    var ID = audioTagID ? audioTagID : $musiqueAudioID;
+    var audioElement = _getElement(ID);
+    if (audioElement) {
+      /* Default "playing" Actions Here */
+      return true;
+    } else return false;
+  }
+
+  /* * * * * * * * * * * * * * * Musique procedural private functions end   * * * * * * * * * * * * * * * */
+
+
+  /* * * * * * * * * * * * * * * * Musique event private functions start * * * * * * * * * * * * * * * * */
   var __playAudio__ = function(event) {
-    if (_play && _isFunction(_play)) {
-      _play(event);
-    } else {
-      _playAudio();
-    }
+    if (_play && _isFunction(_play))         { _play(event);     }
+    if (!event.defaultPrevented)             { _playAudio();     }
+    /* Forced Executed Actions */
   }
 
   var __pauseAudio__ = function(event) {
-    if (_pause && _isFunction(_pause)) {
-      _pause(event);
-    } else {
-      _pauseAudio();
-    }
+    if (_pause && _isFunction(_pause))       { _pause(event);    }
+    if (!event.defaultPrevented)             { _pauseAudio();    }
+    /* Forced Executed Actions */
+    _unsetAudioPlayingInterval();
   }
 
   var __stopAudio__ = function(event) {
-    if (_stop && _isFunction(_stop)) {
-      _stop(event);
-    } else {
-      _stopAudio();
-    }
+    if (_stop && _isFunction(_stop))         { _stop(event);     }
+    if (!event.defaultPrevented)             { _stopAudio();     }
+    /* Forced Executed Actions */
+    $_currentTime = 0;
+    $_remainTime  = $durationTime;
+    if (_timer) { _setTimerText(); }
+    _unsetAudioPlayingInterval();
   }
 
   var __forwardAudio__ = function(event) {
-    if (_forward && _isFunction(_forward)) {
-      _forward(event);
-    } else {
-      _forwardAudio();
-    }
+    if (_forward && _isFunction(_forward))   { _forward(event);  } 
+    if (!event.defaultPrevented)             { _forwardAudio();  }
+    /* Forced Executed Actions */
+    $_currentTime = _integer(_getCurrentTime());
+    $_remainTime  = $durationTime - $_currentTime;
+    if (_timer) { _setTimerText(); }
   }
 
   var __backwardAudio__ = function(event) {
-    if (_backward && _isFunction(_backward)) {
-      _backward(event);
-    } else {
-      _backwardAudio();
-    }
+    if (_backward && _isFunction(_backward)) { _backward(event); }
+    if (!event.defaultPrevented)             { _backwardAudio(); }
+    /* Forced Executed Actions */
+    $_currentTime = _integer(_getCurrentTime());
+    $_remainTime  = $durationTime - $_currentTime;
+    if (_timer) { _setTimerText(); }
   }
 
-  /* Musique object member functions */
+  var __audioReady__ = function(event) {
+    if (_ready && _isFunction(_ready))       { _ready(event);    }
+    if (!event.defaultPrevented)             { _audioReady();    }
+    /* Forced Executed Actions */
+    $durationTime = _integer(_getDurationTime());
+    $_currentTime = 0;
+    $_remainTime  = $durationTime;
+    if (_timer) { _setTimerText(); }
+    if (_autoPlay && !_isPlaying()) { _playAudio(); }
+  }
+
+  var __audioPlaying__ = function(event) {
+    if (_playing && _isFunction(_playing))   { _playing(event);  }
+    if (!event.defaultPrevented)             { _audioPlaying();  }
+    /* Forced Executed Actions */
+    _setAudioPlayingInterval();
+  }
+
+  /* * * * * * * * * * * * * * * * Musique event private functions end   * * * * * * * * * * * * * * * * */
+
+  /* * * * * * * * * * * * * * * * Musique object member functions start * * * * * * * * * * * * * * * * */
 
   /*
    *   Audio Player Action
@@ -469,13 +622,15 @@ function Musique(params) {
       /* Dynamically zoom the wave */
     }
   }
-  
+ 
+  /* * * * * * * * * * * * * * * * Musique object member functions end  * * * * * * * * * * * * * * * * */
+
   /* Render Musique Player */
-  var renderElement = document.getElementById(_render);
+  var renderElement = _getElement(_render);
   
   switch(_type) {
     case 'default':
-      appendNode(renderElement, 'audio', {
+      _appendNode(renderElement, 'audio', {
         class: 'musique musique-default',
         attr: { src: _sourceURL, controls: true }
       });
@@ -492,6 +647,8 @@ function Musique(params) {
 
       /* Button Control Part */
       if (_showControlButtons) {
+        if (!_inputSpecified(params.width)) { _width += $controlButtonsWidth; }
+        
         var btnStyle = {
           'height':        String($buttonHeight) + 'px',
           'border-radius': String(_btnRadius)    + 'px',
@@ -522,27 +679,68 @@ function Musique(params) {
           controlBtnNode.event.click = btnEvent[i];
           musiqueControlNode.child.push(controlBtnNode);
         }
-        if (!params.height) { _height += $buttonHeight; }
-      } else {
-      
+        
+        if (!_inputSpecified(params.height)) { _height += $buttonHeight; }
+        
+        if (_t_enabled) {
+          timerText = " | ";
+          timerNode = {
+            element: 'span',
+            id:      $musiqueTimerID,
+            class:   'musique-timer',
+            text:    ' -- : -- | -- : -- ',
+            style: {
+              // 'height':           String($buttonHeight) + 'px',
+              // 'width':            String($timerWidth)   + 'px',
+              'margin-left':      String(_timerSpacing) + 'px',
+              'margin-right':     String(_timerSpacing) + 'px',
+              'padding':          String(_timerPadding) + 'px',
+              'background-color': String(_timerBgc),
+              'border-radius':    String(_timerRadius)  + 'px',
+              'border':           String(_timerBorder),
+              'font-size':        'small',
+              'color':            '#aaa',
+            }
+          }
+          if (!_inputSpecified(params.width)) { _width += $timerWidth; }
+          musiqueControlNode.child.push(timerNode);
+        }
       }
-      _appendNode(renderElement, 'audio', {
+
+      var audioNodeInfo = {
         class: 'musique-audio',
-        id: $musiqueAudioID,
-        attr: { src: _sourceURL },
-        child: []
-      });
-      _appendNode(renderElement, 'div', {
-        class: 'musique musique-player',
-        id: 'musique-' + $musiqueID,
-        style: {
-          'width':    String(_width)   + 'px',
-          'height':   String(_height)  + 'px',
-          'padding':  String(_padding) + 'px',
-          'overflow': true,
-          'background-color': _bgc
+        id:    $musiqueAudioID,
+        attr:  { src: _sourceURL },
+        event: {
+          ready:   __audioReady__,
+          playing: __audioPlaying__,
         },
-        child: musiqueControlNode
+        child: []
+      };
+
+      var renderTask = new Promise(function(resolve, reject) {
+        _appendNode(renderElement, 'audio', audioNodeInfo);
+
+        _appendNode(renderElement, 'div', {
+          class: 'musique musique-player ' + _customClass,
+          id: 'musique-' + $musiqueID,
+          style: {
+            'width':    String(_width)   + 'px',
+            'height':   String(_height)  + 'px',
+            'padding':  String(_padding) + 'px',
+            'overflow': true,
+            'background-color': _bgc
+          },
+          child: musiqueControlNode
+        });
+
+        resolve();
+      });
+
+      renderTask.then(function() {
+        var rootElement    = _getElement($musiqueRootID);
+        var timerElement   = _getElement($musiqueTimerID);
+        var controlElement = _getElement($musiqueControlID);
       });
       break;
     /*
