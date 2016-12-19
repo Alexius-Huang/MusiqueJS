@@ -1,7 +1,7 @@
 /*
  *
  * Copyright (c) 2016, Maxwell Alexius All rights reserved.
- * Version: 1.0.0 beta
+ * Version: 0.0.0 beta
  * Created at: Wed Dec 14 2016 23:38:04 GMT+0800
  *
  */
@@ -25,11 +25,17 @@ function Musique(params) {
 
   var _getElement = function(elementID) { return document.getElementById(elementID); };
 
+  var _getChildNodes = function(elementID) { return (_getElement(elementID) ? _getElement(elementID).childNodes : null ); };
+
+  var _getLastChildNode = function(elementID) { return (_getChildNodes(elementID) ? _getChildNodes(elementID)[_getChildNodes(elementID).length - 1] : null ); };
+
   var _getWidth = function(element) { return element ? element.offsetWidth : 0 };
 
   var _getHeight = function(element) { return element ? element.offsetHeight : 0 };
 
-  var _containsOnly = function(testString, type) {
+  var _getClickedPosition = function(eventObject) { return { x: eventObject.offsetX, y: eventObject.offsetY }; };
+
+  var _matches = function(testString, type) {
     switch(type) {
       case "numeral":               return /^\d+$/.test(testString);
       case "alphabet":              return /^[a-zA-Z]+$/.test(testString);
@@ -83,7 +89,7 @@ function Musique(params) {
       var _showButtonIcon = _inputSpecified(params.showButtonIcon) ? params.showButtonIcon : false;  
     }
     
-    /* Features */
+    /* Waveform Features */
     var _waveform = _inputSpecified(params.waveform) && params.waveform instanceof Object ? params.waveform : false;
     // if (_waveform) {
     //   var _wf_enabled       = true;
@@ -102,23 +108,23 @@ function Musique(params) {
     //   }
     // } else var _wf_enabled = false;
 
-    var _timer         = _inputSpecified(params.timer) && typeof params.timer === "boolean" ? params.timer : false;
+    /* Timer Feature */
+    var _showTimer     = _inputSpecified(params.showTimer) && typeof params.showTimer === "boolean" ? params.showTimer : false;
     var _timerPosition = _inputSpecified(params.timerPosition) ? params.timerPosition : 'right'; /* 'left' or 'right' */
     
-    if (_timer) {
-      var _t_enabled            = true;
-      var _t_withProgressBar    = _inputSpecified(_timer.withProgressBar)    && typeof _timer.withProgressBar === "boolean" ? _timer.withProgressBar : true ;
-      var _t_progressBarType    = _inputSpecified(_timer.progressBarType)    ? _timer.progressBarType : 'plain';
-      var _t_timerOnProgressBar = _inputSpecified(_timer.timerOnProgressBar) ? _timer.timerOnProgressBar : false;
-      // var _t_type    = _timer.type !== undefined && _timer.type instanceof String ? _timer.type : 'plain'; 
-      /* type: 'plain' | 'progressBar' */
-    } else var _t_enabled = false;
-
-    // var _image = _inputSpecified(params.imageURL) && params.image instanceof Object ? params.imageURL : null;
-    // if (_image) {
-    //   var _i_enabled = true;
-    //   var _i_url     = _inputSpecified(_image.url) && _image.url instanceof String ? _image.url : null;
-    // } else var _i_enabled = false;
+    /* Progress Bar Feature */
+    var _showProgressBar     = _inputSpecified(params.showProgressBar)     && typeof params.showProgressBar    === "boolean" ? params.showProgressBar     : false;
+    var _timerOnProgressBar  = _inputSpecified(params.timerOnProgressBar)  && typeof params.timerOnProgressBar === "boolean" ? params.timerOnProgressBar  : false;
+    var _progressBarPosition = _inputSpecified(params.progressBarPosition) && !_timerOnProgressBar                           ? params.progressBarPosition : 'top';  /* 'top' or 'bottom' */
+    var _progressBarStart    = _inputSpecified(params.progressBarStart)                                                      ? params.progressBarStart    : 'left'; /* 'left' or 'right' */
+    var _progressSkippable   = _inputSpecified(params.progressSkippable)   && typeof params.progressSkippable  === "boolean" ? params.progressSkippable   : true; 
+    
+    /* Image Feature */
+    var _image = _inputSpecified(params.imageURL) && params.image instanceof Object ? params.imageURL : null;
+    if (_image) {
+      var _i_enabled = true;
+      var _i_url     = _inputSpecified(_image.url) && _image.url instanceof String ? _image.url : null;
+    } else var _i_enabled = false;
 
     /* Interact with CSS */
     var _style = _inputSpecified(params.style) && params.style instanceof Object ? params.style : undefined;
@@ -130,14 +136,15 @@ function Musique(params) {
       var _bgc          = _style && _inputSpecified(_style.bgc)          ? _style.bgc          : '#555';
       var _borderRadius = _style && _inputSpecified(_style.borderRadius) ? _style.borderRadius : 5;
 
-      /* Button Part */
-      var _btnSpacing        = _style && _inputSpecified(_style.btnSpacing)        ? _style.btnSpacing       : 3;
-      var _btnIconSize       = 15; // _style && _inputSpecified(_style.btnIconSize) ? _style.btnIconSize  : 15;
+      /* Button Control Part */
+      var _controlBgc        = _style && _inputSpecified(_style.controlBgc)        ? _style.controlBgc        : null;
+      var _btnSpacing        = _style && _inputSpecified(_style.btnSpacing)        ? _style.btnSpacing        : 3;
       var _btnTextColor      = _style && _inputSpecified(_style.btnTextColor)      ? _style.btnTextColor      : '#555';
       var _btnBgc            = _style && _inputSpecified(_style.btnBgc)            ? _style.btnBgc            : '#ccc';
       var _btnHoverTextColor = _style && _inputSpecified(_style.btnHoverTextColor) ? _style.btnHoverTextColor : '#777';
       var _btnHoverBgc       = _style && _inputSpecified(_style.btnHoverBgc)       ? _style.btnHoverBgc       : '#fff';
       var _btnTransitionSec  = _style && _inputSpecified(_style.btnTransitionSec)  ? _style.btnTransitionSec  : 0;
+      var _btnIconSize       = 15; // _style && _inputSpecified(_style.btnIconSize) ? _style.btnIconSize  : 15;
       if (_roundedButton) {
         var _btnRadius = 'rounded'; // Change Radius After Rendering
       } else {
@@ -151,6 +158,16 @@ function Musique(params) {
       var _timerBgc     = _style && _inputSpecified(_style.timerBgc)     ? _style.timerBgc     : '#333';
       var _timerBorder  = _style && _inputSpecified(_style.timerBorder)  ? _style.timerBorder  : '1px solid #aaa';
       var _timerRadius  = _style && _inputSpecified(_style.timerRadius)  ? _style.timerRadius  : 3;
+
+      /* Progress Bar & Trace Part */
+      var _progressBarBgc     = _style && _inputSpecified(_style.progressBarBgc)     ? _style.progressBarBgc     : _bgc;
+      var _progressBarColor   = _style && _inputSpecified(_style.progressBarColor)   ? _style.progressBarColor   : '#2187e7';
+      var _progressBarHeight  = _style && _inputSpecified(_style.progressBarHeight)  ? _style.progressBarHeight  : 5;
+      var _progressBarPadding = _style && _inputSpecified(_style.progressBarPadding) ? _style.progressBarPadding : 0;
+      var _progressBarRadius  = _style && _inputSpecified(_style.progressBarRadius)  ? _style.progressBarRadius  : 5;
+      var _progressBarShadow  = _style && _inputSpecified(_style.progressBarShadow)  ? _style.progressBarShadow  : '0px 0px 10px 1px rgba(0,198,255,0.7)';
+      var _progressBarSpacing = _style && _inputSpecified(_style.progressBarSpacing) ? _style.progressBarSpacing : 0;
+      var _progressTraceColor = _style && _inputSpecified(_style.progressTraceColor) ? _style.progressTraceColor : '#aaa';
 
     /* Control Events */
     var _play     = _inputSpecified(params.play)     && _isFunction(params.play)     ? params.play     : null ;
@@ -170,17 +187,21 @@ function Musique(params) {
   /* * * * * * * * * * * * * * * * * * * * * Parameters Start * * * * * * * * * * * * * * * * * * * * * * * * */
 
   /* Property (Immuteble) Params */
-  var $musiqueID            = randomString(10) + String(Date.now());
-  var $musiqueRootID        = 'musique-'          + $musiqueID;
-  var $musiqueAudioID       = 'musique-audio-'    + $musiqueID;
-  var $musiqueControlID     = 'musique-control-'  + $musiqueID;
-  var $musiqueStopBtnID     = 'musique-stop-'     + $musiqueID; var $stopBtnImgID     = 'img-stop-btn-'     + $musiqueID; var $stopBtnSpanID     = 'span-stop-btn-'     + $musiqueID;
-  var $musiquePauseBtnID    = 'musique-pause-'    + $musiqueID; var $pauseBtnImgID    = 'img-pause-btn-'    + $musiqueID; var $pauseBtnSpanID    = 'span-pause-btn-'    + $musiqueID;
-  var $musiquePlayBtnID     = 'musique-play-'     + $musiqueID; var $playBtnImgID     = 'img-play-btn-'     + $musiqueID; var $playBtnSpanID     = 'span-play-btn-'     + $musiqueID;
-  var $musiqueForwardBtnID  = 'musique-forward-'  + $musiqueID; var $forwardBtnImgID  = 'img-forward-btn-'  + $musiqueID; var $forwardBtnSpanID  = 'span-forward-btn-'  + $musiqueID;
-  var $musiqueBackwardBtnID = 'musique-backward-' + $musiqueID; var $backwardBtnImgID = 'img-backward-btn-' + $musiqueID; var $backwardBtnSpanID = 'span-backward-btn-' + $musiqueID;
-  var $musiqueTimerID       = 'musique-timer-'    + $musiqueID;
-  var $durationTime         = NaN; // Integer type, should be get after "ready" event
+  var $musiqueID                 = randomString(10) + String(Date.now());
+  var $musiqueRootID             = 'musique-'                    + $musiqueID;
+  var $musiqueAudioID            = 'musique-audio-'              + $musiqueID;
+  var $musiqueControlID          = 'musique-control-'            + $musiqueID;
+  var $musiqueProgressBarID      = 'musique-progress-bar-'       + $musiqueID;
+  var $musiqueProgressBarTraceID = 'musique-progress-bar-trace-' + $musiqueID;
+  var $musiqueProgressBarPGID    = 'musique-progress-bar-pg-'    + $musiqueID;
+  var $musiqueStopBtnID          = 'musique-stop-'     + $musiqueID; var $stopBtnImgID     = 'img-stop-btn-'     + $musiqueID; var $stopBtnSpanID     = 'span-stop-btn-'     + $musiqueID;
+  var $musiquePauseBtnID         = 'musique-pause-'    + $musiqueID; var $pauseBtnImgID    = 'img-pause-btn-'    + $musiqueID; var $pauseBtnSpanID    = 'span-pause-btn-'    + $musiqueID;
+  var $musiquePlayBtnID          = 'musique-play-'     + $musiqueID; var $playBtnImgID     = 'img-play-btn-'     + $musiqueID; var $playBtnSpanID     = 'span-play-btn-'     + $musiqueID;
+  var $musiqueForwardBtnID       = 'musique-forward-'  + $musiqueID; var $forwardBtnImgID  = 'img-forward-btn-'  + $musiqueID; var $forwardBtnSpanID  = 'span-forward-btn-'  + $musiqueID;
+  var $musiqueBackwardBtnID      = 'musique-backward-' + $musiqueID; var $backwardBtnImgID = 'img-backward-btn-' + $musiqueID; var $backwardBtnSpanID = 'span-backward-btn-' + $musiqueID;
+  var $musiqueTimerID            = 'musique-timer-'    + $musiqueID;
+  var $durationTime              = NaN; // Integer type, should be get after "ready" event
+  var $stableWidth               = NaN; // Integer type, should be get after "ready" event
 
   /* CSS Style Params */
   $controlButtonsWidth = 300;
@@ -220,7 +241,7 @@ function Musique(params) {
   //   return node;
   // }
   
-  var _timerEnabled = function() { return _t_enabled; }
+  var _timerEnabled = function() { return _showtTimer; }
 
   var _waveformEnabled = function() { return _wf_enabled; }
 
@@ -253,16 +274,20 @@ function Musique(params) {
         _appendNode(node, obj.child.element, obj.child);
       }
     }
-    
+
+    /* Event Constructor */
+    event && _isFunction(event.click)    ? node.addEventListener('click',     event.click,    false) : undefined;
+    event && _isFunction(event.hoverIn)  ? node.addEventListener('mouseover', event.hoverIn,  false) : undefined;
+    event && _isFunction(event.hoverOut) ? node.addEventListener('mouseout',  event.hoverOut, false) : undefined;
+
     switch(element.toLowerCase()) {
       case 'div':
         break;
-      case 'a':        
+      case 'span':
+        break;
+      case 'a':
         node.href   = attr && _inputSpecified(attr.href)   ? attr.href   : '#';
         node.target = attr && _inputSpecified(attr.target) ? attr.target : '_self';
-        event && _isFunction(event.click)    ? node.addEventListener('click',     event.click,    false) : undefined;
-        event && _isFunction(event.hoverIn)  ? node.addEventListener('mouseover', event.hoverIn,  false) : undefined;
-        event && _isFunction(event.hoverOut) ? node.addEventListener('mouseout',  event.hoverOut, false) : undefined;
         break;
       case 'img':
         node.src = attr && _inputSpecified(attr.src) ? attr.src : 'no source specified';
@@ -270,9 +295,6 @@ function Musique(params) {
         break;
       case 'button':
         node.disable = attr && _inputSpecified(attr.disable) ? attr.disable : true;
-        event && _isFunction(event.click)    ? node.addEventListener('click',     event.click,    false) : undefined;
-        event && _isFunction(event.hoverIn)  ? node.addEventListener('mouseover', event.hoverIn,  false) : undefined;
-        event && _isFunction(event.hoverOut) ? node.addEventListener('mouseout',  event.hoverOut, false) : undefined;
         break;
       case 'audio':
         node.controls = attr && _inputSpecified(attr.controls) ? attr.controls : false;
@@ -314,6 +336,7 @@ function Musique(params) {
     if (audioElement && _isPlaying(audioTagID)) {
       /* Default "pause" Actions Here */
       audioElement.pause();
+      _unsetAudioPlayingInterval();
       return true;
     } else return false;
   }
@@ -325,6 +348,11 @@ function Musique(params) {
       /* Default "stop" Actions Here */
       _pauseAudio(audioTagID);
       _setCurrentTime(0, audioTagID);
+      $_currentTime = 0;
+      $_remainTime  = $durationTime;
+      if (_showTimer) { _setTimerText(); }
+      if (_showProgressBar) { _setProgressBarWidth(0); }
+      _unsetAudioPlayingInterval();
       return true;
     } else return false;
   }
@@ -345,6 +373,10 @@ function Musique(params) {
         if (_isPlaying(audioTagID)) { _pauseAudio(audioTagID); }
         _setCurrentTime(0, audioTagID);
       }
+      $_currentTime = _integer(_getCurrentTime());
+      $_remainTime  = $durationTime - $_currentTime;
+      if (_showTimer) { _setTimerText(); }
+      if (_showProgressBar) { _setProgressBarWidth(); }
       return true;
     } else return false;
   }
@@ -365,6 +397,25 @@ function Musique(params) {
         if (_isPlaying(audioTagID)) { _pauseAudio(audioTagID); }
         _setCurrentTime(0, audioTagID);
       }
+      $_currentTime = _integer(_getCurrentTime());
+      $_remainTime  = $durationTime - $_currentTime;
+      if (_showTimer) { _setTimerText(); }
+      if (_showProgressBar) { _setProgressBarWidth(); }
+      return true;
+    } else return false;
+  }
+
+  var _skipAudioTo = function(sec, audioTagID) {
+    var ID = audioTagID ? audioTagID : $musiqueAudioID;
+    var audioElement = _getElement(ID);
+    
+    if (audioElement || !sec || sec < 0 || sec > $durationTime) {
+      /* Default "skipAudioTo" Actions Here */
+      _setCurrentTime(sec, audioTagID);
+      $_currentTime = _integer(_getCurrentTime());
+      $_remainTime  = $durationTime - $_currentTime;
+      if (_showTimer) { _setTimerText(); }
+      if (_showProgressBar) { _setProgressBarWidth(); }
       return true;
     } else return false;
   }
@@ -447,11 +498,19 @@ function Musique(params) {
     timerElement.innerHTML = timerText;
   }
 
+  var _setProgressBarWidth = function(r) {
+    var progressBarPGElement = _getElement($musiqueProgressBarPGID);
+    var progressBarTraceElement = _getElement($musiqueProgressBarTraceID);
+    var ratio = _inputSpecified(r) ? r : ($_currentTime / $durationTime * progressBarTraceElement.offsetWidth) ;
+    progressBarPGElement.style['width'] = String(ratio) + 'px';
+  }
+
   var _setAudioPlayingInterval = function() {
     $_audioPlayingIntervalID = setInterval(function() {
       $_currentTime = _integer(_getCurrentTime());
       $_remainTime  = $durationTime - $_currentTime;
-      if (_timer) { _setTimerText(); }
+      if (_showTimer)           { _setTimerText(); }
+      if (_showProgressBar) { _setProgressBarWidth(); }
     }, 100);
   }
 
@@ -474,6 +533,11 @@ function Musique(params) {
     var audioElement = _getElement(ID);
     if (audioElement) {
       /* Default "ready" Actions Here */
+      $durationTime = _integer(_getDurationTime());
+      $_currentTime = 0;
+      $_remainTime  = $durationTime;
+      if (_showTimer) { _setTimerText(); }
+      if (_autoPlay && !_isPlaying()) { _playAudio(); }
       return true;
     } else return false;
   }
@@ -483,6 +547,7 @@ function Musique(params) {
     var audioElement = _getElement(ID);
     if (audioElement) {
       /* Default "playing" Actions Here */
+      _setAudioPlayingInterval();
       return true;
     } else return false;
   }
@@ -494,61 +559,44 @@ function Musique(params) {
   var __playAudio__ = function(event) {
     if (_play && _isFunction(_play))         { _play(event);     }
     if (!event.defaultPrevented)             { _playAudio();     }
-    /* Forced Executed Actions */
-  }
+  };
 
   var __pauseAudio__ = function(event) {
     if (_pause && _isFunction(_pause))       { _pause(event);    }
     if (!event.defaultPrevented)             { _pauseAudio();    }
-    /* Forced Executed Actions */
-    _unsetAudioPlayingInterval();
-  }
+  };
 
   var __stopAudio__ = function(event) {
     if (_stop && _isFunction(_stop))         { _stop(event);     }
     if (!event.defaultPrevented)             { _stopAudio();     }
-    /* Forced Executed Actions */
-    $_currentTime = 0;
-    $_remainTime  = $durationTime;
-    if (_timer) { _setTimerText(); }
-    _unsetAudioPlayingInterval();
-  }
+  };
 
   var __forwardAudio__ = function(event) {
     if (_forward && _isFunction(_forward))   { _forward(event);  } 
     if (!event.defaultPrevented)             { _forwardAudio();  }
-    /* Forced Executed Actions */
-    $_currentTime = _integer(_getCurrentTime());
-    $_remainTime  = $durationTime - $_currentTime;
-    if (_timer) { _setTimerText(); }
-  }
+  };
 
   var __backwardAudio__ = function(event) {
     if (_backward && _isFunction(_backward)) { _backward(event); }
     if (!event.defaultPrevented)             { _backwardAudio(); }
-    /* Forced Executed Actions */
-    $_currentTime = _integer(_getCurrentTime());
-    $_remainTime  = $durationTime - $_currentTime;
-    if (_timer) { _setTimerText(); }
-  }
+  };
 
   var __audioReady__ = function(event) {
     if (_ready && _isFunction(_ready))       { _ready(event);    }
     if (!event.defaultPrevented)             { _audioReady();    }
-    /* Forced Executed Actions */
-    $durationTime = _integer(_getDurationTime());
-    $_currentTime = 0;
-    $_remainTime  = $durationTime;
-    if (_timer) { _setTimerText(); }
-    if (_autoPlay && !_isPlaying()) { _playAudio(); }
-  }
+  };
 
   var __audioPlaying__ = function(event) {
     if (_playing && _isFunction(_playing))   { _playing(event);  }
     if (!event.defaultPrevented)             { _audioPlaying();  }
-    /* Forced Executed Actions */
-    _setAudioPlayingInterval();
-  }
+  };
+
+  var __progressBarSkippable__ = function(event) {
+    var elementWidth = _getWidth(_getElement($musiqueProgressBarTraceID));
+    var xCoord = _getClickedPosition(event).x;
+    var seconds = _integer(xCoord / elementWidth * $durationTime);
+    _skipAudioTo(seconds);
+  };
 
   /* * * * * * * * * * * * * * * * Musique event private functions end   * * * * * * * * * * * * * * * * */
 
@@ -622,6 +670,11 @@ function Musique(params) {
   this.toggleMute = _toggleMute;
 
   /*
+   *   Skip audio player to assigned seconds which is an integer
+   */
+  this.skipAudioTo = _skipAudioTo;
+
+  /*
    *   Remove the Musique object and following player associated elements
    */
   // this.unmount = _unmount;
@@ -646,16 +699,75 @@ function Musique(params) {
       break;
    
     case 'player':
-      var musiqueControlNode = {
-        element: 'div',
-        class: 'musique-control',
-        id: $musiqueControlID,
-        style: { 'text-align': 'center' },
-        child: []
+      /* Define Nodes */
+      var audioNode = {
+        class: 'musique-audio',
+        id:    $musiqueAudioID,
+        attr:  { src: _sourceURL },
+        event: {
+          ready:   __audioReady__,
+          playing: __audioPlaying__,
+        },
       };
 
-      /* Button Control Part */
+      /* * * * * * * * * * * * * * * Progress Bar Node Part Start * * * * * * * * * * * * * * * */
+      if (_showProgressBar) {
+        var progressBarNode = {
+          class: 'musique musique-progress-bar',
+          id:    $musiqueProgressBarID,
+          style: {
+            'width':            '100%',
+            'padding':          String(_progressBarPadding) + 'px 0px',
+            'height':           String(_progressBarHeight) + 'px',
+            'background-color': _progressBarBgc ? _progressBarBgc : _bgc
+          },
+          child: []
+        };
+        progressBarNode.child.push({
+          element: 'span',
+          class:   'musique musique-progress-bar-trace',
+          id:      $musiqueProgressBarTraceID,
+          style:   {
+            'width': '100%',
+            'height': String(_progressBarHeight) + 'px',
+            'background-color': _progressTraceColor,
+            'display': 'block',
+            'position': 'absolute',
+            'border-radius': String(_progressBarRadius) + 'px',
+            'margin': '0 ' + String(_progressBarSpacing) + 'px'
+          },
+          event: { click: __progressBarSkippable__ }
+        });
+        progressBarNode.child.push({
+          element: 'span',
+          class:   'musiuqe musique-progress-bar-pg',
+          id:      $musiqueProgressBarPGID,
+          style:   {
+            'width': '0.1%',
+            'height': String(_progressBarHeight) + 'px',
+            'background-color': _progressBarColor,
+            'display': 'block',
+            'position': 'relative',
+            'float': _progressBarStart,
+            'border-radius': String(_progressBarRadius) + 'px',
+            'margin': '0 ' + String(_progressBarSpacing) + 'px',
+            'box-shadow': _progressBarShadow
+          },
+          event: { click: __progressBarSkippable__ }
+        });
+      }
+      /* * * * * * * * * * * * * * * Progress Bar Node Part  End  * * * * * * * * * * * * * * * */
+
+      /* * * * * * * * * * * * * * * Musique Control Node Part Start * * * * * * * * *  * * * * * * */
       if (_showControlButtons) {  
+        var musiqueControlNode = {
+          element: 'div',
+          class: 'musique-control',
+          id: $musiqueControlID,
+          style: { 'text-align': 'center' },
+          child: []
+        };
+
         var btnStyle = {
           'height':           String($buttonHeight) + 'px',
           'border-radius':    String(_btnRadius)    + 'px',
@@ -730,7 +842,7 @@ function Musique(params) {
         
         if (!_inputSpecified(params.height)) { _height += $buttonHeight; }
         
-        if (_t_enabled) {
+        if (_showTimer) {
           timerText = " | ";
           timerNode = {
             element: 'span',
@@ -758,44 +870,44 @@ function Musique(params) {
 
           }
         }
-      }
 
-      var audioNodeInfo = {
-        class: 'musique-audio',
-        id:    $musiqueAudioID,
-        attr:  { src: _sourceURL },
-        event: {
-          ready:   __audioReady__,
-          playing: __audioPlaying__,
-        },
-        child: []
-      };
-
-      var renderTask = new Promise(function(resolve, reject) {
-        _appendNode(renderElement, 'audio', audioNodeInfo);
-
-        _appendNode(renderElement, 'div', {
+        var controlNodeInfo = {
           class: 'musique musique-player ' + _customClass,
           id: 'musique-' + $musiqueID,
           style: {
             //'width':        String(_width)   + 'px',
             'height':       String(_height)  + 'px',
             'padding':      String(_padding) + 'px',
-            'borderRadius': String(_borderRadius) + 'px',
+            // 'borderRadius': String(_borderRadius) + 'px',
             'overflow': true,
-            'background-color': _bgc
+            'background-color': _controlBgc ? _controlBgc : _bgc,
           },
           child: musiqueControlNode
-        });
+        }
+      }
+      /* * * * * * * * * * * * * * * Musique Control Node Part  End  * * * * * * * * * * * * * * * */
 
-        setTimeout(function() {resolve();}, 100);
+      var renderTask = new Promise(function(resolve, reject) {
+        if (_sourceURL) { _appendNode(renderElement, 'audio', audioNode); } else { console.error('[Musique Error] Required sourceURL is undefined!'); }
+
+        if (_showProgressBar && _progressBarPosition === 'top') { _appendNode(renderElement, 'div', progressBarNode); }
+
+        if (_showControlButtons) { _appendNode(renderElement, 'div', controlNodeInfo) }
+
+        if (_showProgressBar && _progressBarPosition === 'bottom') { _appendNode(renderElement, 'div', progressBarNode); }
+
+        setTimeout(function() { resolve() }, 100);
       });
 
+      /* Append CSS */
       renderTask.then(function() {
-        var rootElement    = _getElement($musiqueRootID);
-        var timerElement   = _getElement($musiqueTimerID);
-        var controlElement = _getElement($musiqueControlID);
-        
+        var rootElement          = _getElement($musiqueRootID);
+        var timerElement         = _getElement($musiqueTimerID);
+        var controlElement       = _getElement($musiqueControlID);
+        var progressBarElement   = _getElement($musiqueProgressBarID);
+        var progressBarPGElement = _getElement($musiqueProgressBarPGID);
+        var barTraceElement      = _getElement($musiqueProgressBarTraceID);
+
         _width = 0;
 
         if (_showControlButtons) {
@@ -825,7 +937,7 @@ function Musique(params) {
           pauseBtn.style['border-radius']    = '50%';
           playBtn.style['border-radius']     = '50%';
           forwardBtn.style['border-radius']  = '50%';
-          backwardBtn.style['border-radius'] = '50%';  
+          backwardBtn.style['border-radius'] = '50%';
         }
 
         if (_showControlButtons) {
@@ -836,12 +948,26 @@ function Musique(params) {
           _width += 2 * _btnSpacing; _width += _getWidth(backwardBtn);
         }
 
-        if (_timer) {
+        if (_showTimer) {
           _width += _getWidth(timerElement);
           _width += 2 * _timerSpacing + 10;
         }
-        _width += 2 * _padding;
-        rootElement.style['width'] = String(_inputSpecified(_style) && _inputSpecified(_style.width) ? _style.width : _width) + 'px';
+
+        _width += 2 * _padding + 15;
+        $stableWidth = _width;
+
+        renderElement.style['width'] = String(_inputSpecified(_style) && _inputSpecified(_style.width) ? _style.width : _width) + 'px';
+        
+        _getChildNodes(_render)[1].style['border-top-left-radius']      = String(_borderRadius) + 'px';
+        _getChildNodes(_render)[1].style['border-top-right-radius']     = String(_borderRadius) + 'px';
+        _getLastChildNode(_render).style['border-bottom-left-radius']   = String(_borderRadius) + 'px';
+        _getLastChildNode(_render).style['border-bottom-right-radius']  = String(_borderRadius) + 'px';
+
+        if (_showProgressBar) {
+          progressBarPGElement.style['max-width'] = String(_width - 2 * _progressBarSpacing) + 'px';
+          barTraceElement.style['max-width'] = String(_width - 2 * _progressBarSpacing)+ 'px';
+        }
+        
       });
       break;
     /*
