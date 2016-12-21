@@ -21,6 +21,8 @@ function Musique(params) {
 
   var _isFunction = function(input) { return typeof input === "function"; };
 
+  var _isBoolean = function(input) { return typeof input === "boolean"; }
+
   var _integer = function(input) { return Math.floor(input); };
 
   var _getElement = function(elementID) { return document.getElementById(elementID); };
@@ -48,6 +50,31 @@ function Musique(params) {
     }
   }
 
+  var _importScript = function(url, callback) {
+    // Adding the script tag to the head as suggested before
+    var head = document.getElementsByTagName('head')[0];
+    var script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.src = url;
+
+    // Then bind the event to the callback function.
+    // There are several events for cross browser compatibility.
+    script.onreadystatechange = callback;
+    script.onload = callback;
+
+    // Fire the loading
+    head.appendChild(script);
+  }
+
+  var _scriptAlreadyExist = function(url) {
+    if (!url) return null;
+    var scripts = document.getElementsByTagName('script');
+    for (var i = scripts.length; i--;) {
+      if (scripts[i].src == url) return true;
+    }
+    return false;
+  }
+
   // var _cssValue = function(input) {
   //   if (typeof input == "number") {
   //     return String(input) + 'px';
@@ -57,7 +84,7 @@ function Musique(params) {
   // }
 
   /* * * * * * * * * * * * * * * * * * * * Helper Functions  Ends  * * * * * * * * * * * * * * * * * * * * * */
-  
+
   /* * * * * * * * * * * * * * * * * * * * * Inputs Fields Start * * * * * * * * * * * * * * * * * * * * * * */
   
   /* Required Field */
@@ -72,8 +99,9 @@ function Musique(params) {
    */
 
   /* Optional Field */
-  var _customClass = _inputSpecified(params.customClass) ? params.customClass : '';
-  var _autoPlay    = _inputSpecified(params.autoPlay)    ? params.autoPlay    : false;
+  var _customClass    = _inputSpecified(params.customClass)    ? params.customClass    : '';
+  var _autoPlay       = _inputSpecified(params.autoPlay)       ? params.autoPlay       : false;
+  var _renderSequence = _inputSpecified(params.renderSequence) ? params.renderSequence : ['progressBar', 'control', 'waveform'];
     
   if (_type != 'default') {
     /* Control Attribute */
@@ -90,9 +118,9 @@ function Musique(params) {
     }
     
     /* Waveform Features */
-    var _waveform = _inputSpecified(params.waveform) && params.waveform instanceof Object ? params.waveform : false;
-    // if (_waveform) {
-    //   var _wf_enabled       = true;
+    var _showWaveform      = _inputSpecified(params.showWaveform)      && _isBoolean(params.showWaveform)      ? params.showWaveform      : false;
+    var _waveformSkippable = _inputSpecified(params.waveformSkippable) && _isBoolean(params.waveformSkippable) ? params.waveformSkippable : true; 
+
     //   var _wf_type          = _inputSpecified(_waveform.type)          ? _waveform.type          : '';
     //   var _wf_audioRate     = _inputSpecified(_waveform.audioRate)     ? _waveform.audioRate     : 1;
     //   var _wf_waveColor     = _inputSpecified(_waveform.waveColor)     ? _waveform.waveColor     : '#999';
@@ -109,22 +137,22 @@ function Musique(params) {
     // } else var _wf_enabled = false;
 
     /* Timer Feature */
-    var _showTimer     = _inputSpecified(params.showTimer) && typeof params.showTimer === "boolean" ? params.showTimer : false;
+    var _showTimer     = _inputSpecified(params.showTimer) && _isBoolean(params.showTimer) ? params.showTimer : false;
     var _timerPosition = _inputSpecified(params.timerPosition) ? params.timerPosition : 'right'; /* 'left' or 'right' */
     
     /* Progress Bar Feature */
-    var _showProgressBar     = _inputSpecified(params.showProgressBar)     && typeof params.showProgressBar    === "boolean" ? params.showProgressBar     : false;
-    var _timerOnProgressBar  = _inputSpecified(params.timerOnProgressBar)  && typeof params.timerOnProgressBar === "boolean" ? params.timerOnProgressBar  : false;
-    var _progressBarPosition = _inputSpecified(params.progressBarPosition) && !_timerOnProgressBar                           ? params.progressBarPosition : 'top';  /* 'top' or 'bottom' */
-    var _progressBarStart    = _inputSpecified(params.progressBarStart)                                                      ? params.progressBarStart    : 'left'; /* 'left' or 'right' */
-    var _progressSkippable   = _inputSpecified(params.progressSkippable)   && typeof params.progressSkippable  === "boolean" ? params.progressSkippable   : true; 
+    var _showProgressBar     = _inputSpecified(params.showProgressBar)     && _isBoolean(params.showProgressBar)    ? params.showProgressBar     : false;
+    // var _timerOnProgressBar  = _inputSpecified(params.timerOnProgressBar)  && _isBoolean(params.timerOnProgressBar) ? params.timerOnProgressBar  : false;
+    // var _progressBarPosition = _inputSpecified(params.progressBarPosition) && !_timerOnProgressBar                  ? params.progressBarPosition : 'top';  /* 'top' or 'bottom' */
+    var _progressBarStart    = _inputSpecified(params.progressBarStart)                                             ? params.progressBarStart    : 'left'; /* 'left' or 'right' */
+    var _progressSkippable   = _inputSpecified(params.progressSkippable)   && _isBoolean(params.progressSkippable)  ? params.progressSkippable   : true; 
     
     /* Image Feature */
-    var _image = _inputSpecified(params.imageURL) && params.image instanceof Object ? params.imageURL : null;
-    if (_image) {
-      var _i_enabled = true;
-      var _i_url     = _inputSpecified(_image.url) && _image.url instanceof String ? _image.url : null;
-    } else var _i_enabled = false;
+    // var _image = _inputSpecified(params.imageURL) && params.image instanceof Object ? params.imageURL : null;
+    // if (_image) {
+    //   var _i_enabled = true;
+    //   var _i_url     = _inputSpecified(_image.url) && _image.url instanceof String ? _image.url : null;
+    // } else var _i_enabled = false;
 
     /* Interact with CSS */
     var _style = _inputSpecified(params.style) && params.style instanceof Object ? params.style : undefined;
@@ -169,6 +197,22 @@ function Musique(params) {
       var _progressBarSpacing = _style && _inputSpecified(_style.progressBarSpacing) ? _style.progressBarSpacing : 0;
       var _progressTraceColor = _style && _inputSpecified(_style.progressTraceColor) ? _style.progressTraceColor : '#aaa';
 
+      /* Waveform Part */
+      var _waveformType            = _style && _inputSpecified(_style.waveformType)            ? _style.waveformType            : 'bar';
+      var _waveformHeight          = _style && _inputSpecified(_style.waveformHeight)          ? _style.waveformHeight          : 50;
+      var _waveformBgc             = _style && _inputSpecified(_style.waveformBgc)             ? _style.waveformBgc             : '#555';
+      var _waveformProgressColor   = _style && _inputSpecified(_style.waveformProgressColor)   ? _style.waveformProgressColor   : '#2187e7';
+      var _waveformColor           = _style && _inputSpecified(_style.waveformColor)           ? _style.waveformColor           : '#aaa';
+      var _waveformCursorColor     = _style && _inputSpecified(_style.waveformCursorColor)     ? _style.waveformCursorColor     : 'transparent';
+      var _waveformCursorWidth     = _style && _inputSpecified(_style.waveformCursorWidth)     ? _style.waveformCursorWidth     : 1;
+      var _waveformSpacing         = _style && _inputSpecified(_style.waveformSpacing)         ? _style.waveformSpacing         : 10;
+      var _waveformVerticalSpacing = _style && _inputSpecified(_style.waveformVerticalSpacing) ? _style.waveformVerticalSpacing : 10;
+      if (_waveformType === 'bar') {
+        var _waveformBarWidth = _style && _inputSpecified(_style.waveformBarWidth) ? _style.waveformBarWidth : 3;  
+      } else if (_waveformType === 'wave') {
+        var _waveformBarWidth = null;
+      }
+      
     /* Control Events */
     var _play     = _inputSpecified(params.play)     && _isFunction(params.play)     ? params.play     : null ;
     var _pause    = _inputSpecified(params.pause)    && _isFunction(params.pause)    ? params.pause    : null ;
@@ -183,6 +227,13 @@ function Musique(params) {
   }
 
   /* * * * * * * * * * * * * * * * * * * * * Inputs Fields End * * * * * * * * * * * * * * * * * * * * * * * */
+
+  if (_showWaveform) { 
+    try { WaveSurfer } catch (e) {
+      console.error('[Musique Error] WaveSurfer.js is not included, please view https://cdnjs.com/libraries/wavesurfer.js');
+      _showWaveform = false;
+    }
+  }
 
   /* * * * * * * * * * * * * * * * * * * * * Parameters Start * * * * * * * * * * * * * * * * * * * * * * * * */
 
@@ -200,6 +251,11 @@ function Musique(params) {
   var $musiqueForwardBtnID       = 'musique-forward-'  + $musiqueID; var $forwardBtnImgID  = 'img-forward-btn-'  + $musiqueID; var $forwardBtnSpanID  = 'span-forward-btn-'  + $musiqueID;
   var $musiqueBackwardBtnID      = 'musique-backward-' + $musiqueID; var $backwardBtnImgID = 'img-backward-btn-' + $musiqueID; var $backwardBtnSpanID = 'span-backward-btn-' + $musiqueID;
   var $musiqueTimerID            = 'musique-timer-'    + $musiqueID;
+  
+  var $musiqueWaveformID          = 'musique-waveform-'           + $musiqueID;
+  var $musiqueWaveformContainerID = 'musique-waveform-container-' + $musiqueID;
+  var $musiqueWaveformLoadingID   = 'musique-waveform-loading-'   + $musiqueID;
+
   var $durationTime              = NaN; // Integer type, should be get after "ready" event
   var $stableWidth               = NaN; // Integer type, should be get after "ready" event
 
@@ -212,6 +268,7 @@ function Musique(params) {
   var $_currentTime = NaN; // Integer Type
   var $_remainTime  = NaN; // Integer Type
   var $_audioPlayingIntervalID = null;
+  var $_waveform    = undefined;
 
   /* * * * * * * * * * * * * * * * * * * * * Parameters End * * * * * * * * * * * * * * * * * * * * * * * * * */
 
@@ -241,12 +298,8 @@ function Musique(params) {
   //   return node;
   // }
   
-  var _timerEnabled = function() { return _showtTimer; }
+  var _waveformAvailable = function() { return _showWaveform && $_waveform; }
 
-  var _waveformEnabled = function() { return _wf_enabled; }
-
-  var _imageEnabled = function() { return _i_enabled; }
-  
   var _appendNode = function(parentElement, element, obj) {
     var node = document.createElement(element);
     if (obj.class) node.className = obj.class;
@@ -326,6 +379,7 @@ function Musique(params) {
     if (audioElement && !_isPlaying(audioTagID)) {
       /* Default "play" Actions Here */
       audioElement.play();
+      if (_showWaveform && $_waveform && !$_waveform.isPlaying()) { $_waveform.play(); }
       return true;
     } else return false;
   }
@@ -336,6 +390,7 @@ function Musique(params) {
     if (audioElement && _isPlaying(audioTagID)) {
       /* Default "pause" Actions Here */
       audioElement.pause();
+      if (_showWaveform && $_waveform && $_waveform.isPlaying()) { $_waveform.pause(); }
       _unsetAudioPlayingInterval();
       return true;
     } else return false;
@@ -347,6 +402,10 @@ function Musique(params) {
     if (audioElement) {
       /* Default "stop" Actions Here */
       _pauseAudio(audioTagID);
+      if (_showWaveform && $_waveform) {
+        if ($_waveform.isPlaying()) { $_waveform.pause(); }
+        $_waveform.seekTo(0);
+      }
       _setCurrentTime(0, audioTagID);
       $_currentTime = 0;
       $_remainTime  = $durationTime;
@@ -369,9 +428,14 @@ function Musique(params) {
       var nextTime    = currentTime + skipLength;
       if (nextTime < duration) {
         _setCurrentTime(nextTime, audioTagID);
+        if (_waveformAvailable()) { $_waveform.seekTo(nextTime / duration); }
       } else if (nextTime >= duration) {
         if (_isPlaying(audioTagID)) { _pauseAudio(audioTagID); }
         _setCurrentTime(0, audioTagID);
+        if (_waveformAvailable()) {
+          if ($_waveform.isPlaying()) { $_waveform.pause(); }
+          $_waveform.seekTo(0);
+        }
       }
       $_currentTime = _integer(_getCurrentTime());
       $_remainTime  = $durationTime - $_currentTime;
@@ -393,9 +457,16 @@ function Musique(params) {
       var nextTime    = currentTime - skipLength;
       if (nextTime > 0) {
         _setCurrentTime(nextTime, audioTagID);
+        if (_waveformAvailable()) {
+          $_waveform.seekTo(nextTime / duration);
+        }
       } else if (nextTime <= 0) {
         if (_isPlaying(audioTagID)) { _pauseAudio(audioTagID); }
         _setCurrentTime(0, audioTagID);
+        if (_waveformAvailable()) {
+          if ($_waveform.isPlaying()) {$_waveform.pause(); }
+          $_waveform.seekTo(0);
+        }
       }
       $_currentTime = _integer(_getCurrentTime());
       $_remainTime  = $durationTime - $_currentTime;
@@ -505,6 +576,37 @@ function Musique(params) {
     progressBarPGElement.style['width'] = String(ratio) + 'px';
   }
 
+  var _setWaveform = function(waveformTagID) {
+    var ID = waveformTagID ? waveformTagID : $musiqueWaveformID;
+    var waveSurfer = WaveSurfer.create({
+      container:     '#' + ID,
+      barWidth:      _waveformBarWidth ? _waveformBarWidth : undefined,
+      height:        _waveformHeight,
+      progressColor: _waveformProgressColor,
+      waveColor:     _waveformColor,
+      cursorColor:   _waveformCursorColor,
+      cursorWidth:   _waveformCursorWidth,
+      skipLength:    _skipLength
+    });
+    waveSurfer.load(_sourceURL);
+    waveSurfer.on('ready', function() {
+      var loadingElement  = _getElement($musiqueWaveformLoadingID);
+      var waveformElement = _getElement($musiqueWaveformID);
+      waveSurfer.zoom(20);
+      waveSurfer.setVolume(0);
+      waveSurfer.on('seek', function(progress) {
+        var duration = _getDurationTime();
+        var seconds  = progress * duration;
+        _skipAudioTo(seconds);
+      });
+      loadingElement.style['display']  = 'none';
+      waveformElement.style['display'] = 'block';
+      $_waveform = waveSurfer;
+
+      if (_autoPlay) { _playAudio(); }
+    });
+  }
+
   var _setAudioPlayingInterval = function() {
     $_audioPlayingIntervalID = setInterval(function() {
       $_currentTime = _integer(_getCurrentTime());
@@ -532,12 +634,11 @@ function Musique(params) {
     var ID = audioTagID ? audioTagID : $musiqueAudioID;
     var audioElement = _getElement(ID);
     if (audioElement) {
-      /* Default "ready" Actions Here */
       $durationTime = _integer(_getDurationTime());
       $_currentTime = 0;
       $_remainTime  = $durationTime;
       if (_showTimer) { _setTimerText(); }
-      if (_autoPlay && !_isPlaying()) { _playAudio(); }
+      if (_autoPlay && !_isPlaying() && !_showWaveform) { _playAudio(); }   
       return true;
     } else return false;
   }
@@ -594,7 +695,10 @@ function Musique(params) {
   var __progressBarSkippable__ = function(event) {
     var elementWidth = _getWidth(_getElement($musiqueProgressBarTraceID));
     var xCoord = _getClickedPosition(event).x;
-    var seconds = _integer(xCoord / elementWidth * $durationTime);
+    var seconds = (xCoord / elementWidth * $durationTime);
+    if (_waveformAvailable()) {
+      $_waveform.seekTo(xCoord / elementWidth);
+    }
     _skipAudioTo(seconds);
   };
 
@@ -679,7 +783,7 @@ function Musique(params) {
    */
   // this.unmount = _unmount;
   
-  if (_waveform) /* Waveform attr. enabled */ {
+  if (_showWaveform) /* Waveform attr. enabled */ {
     this.zoomWave = function() {
       /* Dynamically zoom the wave */
     }
@@ -734,9 +838,10 @@ function Musique(params) {
             'display': 'block',
             'position': 'absolute',
             'border-radius': String(_progressBarRadius) + 'px',
-            'margin': '0 ' + String(_progressBarSpacing) + 'px'
+            'margin': '0 ' + String(_progressBarSpacing) + 'px',
+            'cursor': (_progressSkippable ? 'pointer' : 'default')
           },
-          event: { click: __progressBarSkippable__ }
+          event: { click: (_progressSkippable ? __progressBarSkippable__ : null) }
         });
         progressBarNode.child.push({
           element: 'span',
@@ -751,9 +856,10 @@ function Musique(params) {
             'float': _progressBarStart,
             'border-radius': String(_progressBarRadius) + 'px',
             'margin': '0 ' + String(_progressBarSpacing) + 'px',
-            'box-shadow': _progressBarShadow
+            'box-shadow': _progressBarShadow,
+            'cursor': (_progressSkippable ? 'pointer' : 'default')
           },
-          event: { click: __progressBarSkippable__ }
+          event: { click: (_progressSkippable ? __progressBarSkippable__ : null) }
         });
       }
       /* * * * * * * * * * * * * * * Progress Bar Node Part  End  * * * * * * * * * * * * * * * */
@@ -878,7 +984,6 @@ function Musique(params) {
             //'width':        String(_width)   + 'px',
             'height':       String(_height)  + 'px',
             'padding':      String(_padding) + 'px',
-            // 'borderRadius': String(_borderRadius) + 'px',
             'overflow': true,
             'background-color': _controlBgc ? _controlBgc : _bgc,
           },
@@ -887,14 +992,58 @@ function Musique(params) {
       }
       /* * * * * * * * * * * * * * * Musique Control Node Part  End  * * * * * * * * * * * * * * * */
 
+      /* * * * * * * * * * * * * * * Waveform Surfer Node Part Start * * * * * * * * * * * * * * * */
+      if (_showWaveform) {
+        var waveformNode = {
+          class: 'musique musique-waveform-container',
+          id:    $musiqueWaveformContainerID,
+          style: {
+            'padding': String(_waveformVerticalSpacing) + 'px ' + String(_waveformSpacing) + 'px'
+          },
+          child: [
+            {
+              element: 'div',
+              class:   'musique musique-waveform-loading',
+              id:      $musiqueWaveformLoadingID,
+              text:    'Audio Waveform Loading...',
+              style:   {
+                'background-color': _waveformBgc,
+                'text-align': 'center'
+              }
+            },
+            {
+              element: 'div',
+              class:   'musique musique-waveform',
+              id:      $musiqueWaveformID,
+              style:   {
+                'background-color': _waveformBgc,
+                'display': 'none'
+              }
+            }
+          ]
+        }
+      }
+      /* * * * * * * * * * * * * * * Waveform Surfer Node Part  End * * * * * * * * * * * * * * * */
+      
+      /* * * * * * * * * * * * * * * * * * Main Rendering Start * * * * * * * * * * * * * * * * * * */
       var renderTask = new Promise(function(resolve, reject) {
         if (_sourceURL) { _appendNode(renderElement, 'audio', audioNode); } else { console.error('[Musique Error] Required sourceURL is undefined!'); }
 
-        if (_showProgressBar && _progressBarPosition === 'top') { _appendNode(renderElement, 'div', progressBarNode); }
+        for (component of _renderSequence) {
+          switch(component) {
+            case 'control':     if (_showControlButtons) _appendNode(renderElement, 'div', controlNodeInfo); break;
+            case 'progressBar': if (_showProgressBar)    _appendNode(renderElement, 'div', progressBarNode); break;
+            case 'waveform':    if (_showWaveform)       _appendNode(renderElement, 'div', waveformNode);    break;
+          }
+        }
 
-        if (_showControlButtons) { _appendNode(renderElement, 'div', controlNodeInfo) }
+        // if (_showProgressBar && _progressBarPosition === 'top') { _appendNode(renderElement, 'div', progressBarNode); }
 
-        if (_showProgressBar && _progressBarPosition === 'bottom') { _appendNode(renderElement, 'div', progressBarNode); }
+        // if (_showControlButtons) { _appendNode(renderElement, 'div', controlNodeInfo) }
+
+        // if (_showProgressBar && _progressBarPosition === 'bottom') { _appendNode(renderElement, 'div', progressBarNode); }
+
+        // if (_showWaveform) { _appendNode(renderElement, 'div', waveformNode) }
 
         setTimeout(function() { resolve() }, 100);
       });
@@ -957,19 +1106,23 @@ function Musique(params) {
         $stableWidth = _width;
 
         renderElement.style['width'] = String(_inputSpecified(_style) && _inputSpecified(_style.width) ? _style.width : _width) + 'px';
-        
-        _getChildNodes(_render)[1].style['border-top-left-radius']      = String(_borderRadius) + 'px';
-        _getChildNodes(_render)[1].style['border-top-right-radius']     = String(_borderRadius) + 'px';
-        _getLastChildNode(_render).style['border-bottom-left-radius']   = String(_borderRadius) + 'px';
-        _getLastChildNode(_render).style['border-bottom-right-radius']  = String(_borderRadius) + 'px';
+
+        _getChildNodes(_render)[1].style['border-top-left-radius']     = String(_borderRadius) + 'px';
+        _getChildNodes(_render)[1].style['border-top-right-radius']    = String(_borderRadius) + 'px';
+        _getLastChildNode(_render).style['border-bottom-left-radius']  = String(_borderRadius) + 'px';
+        _getLastChildNode(_render).style['border-bottom-right-radius'] = String(_borderRadius) + 'px';
 
         if (_showProgressBar) {
           progressBarPGElement.style['max-width'] = String(_width - 2 * _progressBarSpacing) + 'px';
           barTraceElement.style['max-width'] = String(_width - 2 * _progressBarSpacing)+ 'px';
         }
-        
+
+        if (_showWaveform) { _setWaveform(); }
+
       });
       break;
+      /* * * * * * * * * * * * * * * * * * Main Rendering  End  * * * * * * * * * * * * * * * * * * */
+      
     /*
     case 'playlist':
       break;
