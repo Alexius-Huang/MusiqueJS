@@ -379,6 +379,24 @@ You can use `event.preventDefault()` and then add control or do something, for e
 </script>
 ```
 
+Or you can "transplant" the event to other whichever kind of buttons or switch, for example :
+
+```html
+<div id="audio-player"></div>
+
+<button onClick="musique.playAudio()">Play Me</button>
+<button onClick="musique.pauseAudio()">Pause Me</button>
+<button onClick="musique.stopAudio()">Stop Me</button>
+
+<script>
+  var musique = new Musique({
+    render: 'audio-player',
+    sourceURL: AUDIO_SOURCE_URL,
+    showControlButtons: false
+  });
+</script>
+```
+
 Some Q & A :
 
 - What is the difference between the `play` event and `playing` event ?
