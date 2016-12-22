@@ -185,8 +185,68 @@ For another example :
 For more information about customizing styles in MusiqueJS, please view [Style Reference](#ch7-01)
 
 <div id="ch2-01"></div>
-## MusiqueJS Options
+## MusiqueJS Basic Options
 
+In order to parse the audio player by MusiqueJS, there is a general format of the audio player :
+
+```javascript
+<script>
+  var musique = new Musique({
+    option1: value1,
+    option2: value2,
+
+    // ... Musique Option and Value Pairs ...
+
+    // Musique Events followed by function type value and has a default "event" parameter
+    event1: function(event) {
+      // ... Musique Event1 Control Flow ...
+    },
+    event2: function(event) {
+      // ... Musique Event2 Control Flow ...
+    },
+
+    // To append styles, you need to add "style" option. Inside the style option, you can append style key value pairs
+    style: {
+      style1: value1,
+      style2: value2,
+      // ... Musique Styles ...
+    }
+  });
+</script>
+```
+
+For more information about options, you can view basic options in this section or view full stack of available options [here](#ch7-01).
+
+For available events, please view [here](#ch9-01).
+
+For available styles key-value pairs, please view [here](#ch10-01).
+
+#### Required Options
+
+Basically, you need to have these options in order to let the audio player render successfully :
+
+| Option | Value Type | Default Value | Description |
+|:------:|:----------:|:-------------:| ----------- |
+| `render`| `string` | `null` | The `id` of the element which the audio player will render to. For example |
+| `sourceURL` | `string` | `null` | The source of the audio, only accept type `.mp3`, `.ogg` or `.wav` |
+| `type` | `string` | `default` | The type of the audio player, basic HTML5 type is `default`, customize type is `player` |
+
+#### Optional
+
+(Currently there are some options are under construction, we only release stable options in the list.)
+
+| Option | Value Type | Default Value | Description |
+|:------:|:----------:|:-------------:| ----------- |
+| `customClass` | `string` | `""` | Add custom class into the `Musique` element |
+| `autoPlay` | `boolean` | `false` | When the audio player is ready (or the `ready` event is fired), it will start playing audio automatically |
+| `renderSequence` | `array` | `["progressBar", "control", "waveform"]` | The rendering sequence of the audio player. |
+| `skipLength` | `number` | `5` | The skip length of the audio, it triggers along the `forward` or `backward` event, or along the method `forwardAudio()` or `backwardAudio()`. |
+| `showControlButtons` | `boolean` | `true` | Determine whether to show the control button panel or not. For more information, see [Control Buttons Feature](#ch3-01) |
+| `showTimer` | `boolean` | `false` | Determine whether to show the timer or not. For more information, see [Timer Feature](#ch4-01) |
+| `showProgressBar` | `boolean` | `false` | Determine whether to show the audio progress bar or not. For more information, see [Progress Bar Feature](#ch5-01) |
+| `showWaveform` | `boolean` | `false` | Determine whether to show the waveform or not. For more information, see [Waveform Feature](#ch6-01) |
+
+For all the options reference, please click [here](#ch7-01).
 
 
 <div id="ch3-01"></div>
@@ -235,7 +295,7 @@ Built-in methods should be called by the `Musique` object, for example :
 Here is the list of the available methods :
 
 | Methods | Description |
-| ------- | ----------- |
+|:-------:| ----------- |
 | `playAudio()` | Play the audio |
 | `pauseAudio()` | Pause the audio |
 | `stopAudio()` | Stop the audio |
@@ -254,7 +314,7 @@ Here is the list of the available methods :
 Here is the list of available events :
 
 | Events | Description | 
-| ------ | ----------- |
+|:------:| ----------- |
 | `ready` | Event fired when audio is ready to play. |
 | `play` | Event fired when the audio started to play |
 | `pause` | Event fired when the audio being paused |
@@ -331,7 +391,7 @@ Some Q & A :
 Here are available styles you can append
 
 | Style Options | Format | Default Value | Description | 
-| ------------- |:------:|:-------------:|-------------|
+|:-------------:|:------:|:-------------:|-------------|
 | `width` | `number` | Depend on customization | Width of the music player in "pixels" |
 | `height` | `number` | Depend on custimization | Height of the music player in "pixels" |
 | `padding` | `number` | `8` | Padding of the music player in "pixels" |

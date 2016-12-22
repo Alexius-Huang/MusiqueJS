@@ -105,10 +105,10 @@ function Musique(params) {
     
   if (_type != 'default') {
     /* Control Attribute */
+    var _skipLength         = _inputSpecified(params.skipLength)         ? params.skipLength         : 5;
     var _showControlButtons = _inputSpecified(params.showControlButtons) ? params.showControlButtons : true;
     var _roundedButton      = _inputSpecified(params.roundedButton)      ? params.roundedButton      : false;
     var _buttonIconType     = _inputSpecified(params.buttonIconType)     ? params.buttonIconType     : 'dark';
-    var _skipLength         = _inputSpecified(params.skipLength)         ? params.skipLength         : 5;
     if (_roundedButton) {
       var _showButtonText = false;
       var _showButtonIcon = true;
@@ -119,7 +119,7 @@ function Musique(params) {
     
     /* Waveform Features */
     var _showWaveform      = _inputSpecified(params.showWaveform)      && _isBoolean(params.showWaveform)      ? params.showWaveform      : false;
-    var _waveformSkippable = _inputSpecified(params.waveformSkippable) && _isBoolean(params.waveformSkippable) ? params.waveformSkippable : true; 
+    // var _waveformSkippable = _inputSpecified(params.waveformSkippable) && _isBoolean(params.waveformSkippable) ? params.waveformSkippable : true; 
 
     //   var _wf_type          = _inputSpecified(_waveform.type)          ? _waveform.type          : '';
     //   var _wf_audioRate     = _inputSpecified(_waveform.audioRate)     ? _waveform.audioRate     : 1;
