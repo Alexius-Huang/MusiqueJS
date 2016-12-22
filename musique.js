@@ -760,7 +760,8 @@ function Musique(params) {
    *   Set the current time of the audio, input value should be unsigned
    *   integer which represent the seconds of the audio time
    */
-  this.setCurrentTime = _setCurrentTime;
+  // CONFLICT TO skipAudioTo method
+  // this.setCurrentTime = _setCurrentTime;
 
   /*
    *   Set the volume of the audio, input value should be number in range
