@@ -37,7 +37,7 @@ MusiqueJS helps you parse audio player in a simple way, it can be customized eas
 
 To parse out plain HTML5 audio API, it is simple as below, specify your render element's ID and the source URL of the audio :
 
-```javascript
+```html
 <div id="audio-player"></div>
 
 <script>
@@ -52,7 +52,7 @@ To parse out plain HTML5 audio API, it is simple as below, specify your render e
 
 You can also render 'player' type, it will have buttons that controls the player :
 
-```javascript
+```html
 <div id="audio-player"></div>
 
 <script>
@@ -68,7 +68,7 @@ You can also render 'player' type, it will have buttons that controls the player
 
 You can assign timer into your player :
 
-```javascript
+```html
 <div id="audio-player"></div>
 
 <script>
@@ -85,7 +85,7 @@ You can assign timer into your player :
 
 Or perhaps add progress bar into your audio player :
 
-```javascript
+```html
 <div id="audio-player"></div>
 
 <script>
@@ -109,7 +109,7 @@ Or perhaps add progress bar into your audio player :
 
 Another awesome feature is to add waveform into your audio player, it is credited by [WaveSurfer.js API](https://wavesurfer-js.org). You need to include the [WaveSurfer CDN](https://cdnjs.com/libraries/wavesurfer.js), and then you can use the `showWaveform` feature :
 
-```javascript
+```html
 <div id="audio-player"></div>
 
 <script>
@@ -131,7 +131,7 @@ Another awesome feature is to add waveform into your audio player, it is credite
 
 So far it does not contains only these small tricks, it can also customize the style by adding style option with an object type of value. For example :
 
-```javascript
+```html
 <script>
   var musique = new Musique({
     render: 'example',
@@ -154,7 +154,7 @@ So far it does not contains only these small tricks, it can also customize the s
 
 For another example :
 
-```javascript
+```html
 <script>
   var musique = new Musique({
     render: 'example',
@@ -189,7 +189,7 @@ For more information about customizing styles in MusiqueJS, please view [Style R
 
 In order to parse the audio player by MusiqueJS, there is a general format of the audio player :
 
-```javascript
+```html
 <script>
   var musique = new Musique({
     option1: value1,
@@ -279,7 +279,7 @@ UNDER CONSTRUCTION
 
 Built-in methods should be called by the `Musique` object, for example :
 
-```javascript
+```html
 <script>
   var musique = new Musique({
     render: 'audio-player',
@@ -325,7 +325,7 @@ Here is the list of available events :
 
 You can use the sample code below to test the event :
 
-```javascript
+```html
 <script>
   var eventsTest = new Musique({
     render: 'test-audio-event',
@@ -360,7 +360,7 @@ You can use the sample code below to test the event :
 
 You can use `event.preventDefault()` and then add control or do something, for example :
 
-```javascript
+```html
 <script>
   var eventsTest = new Musique({
     render: 'test-audio-event',
